@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عبدالمعز اسم وصفة التسليم والتكرار</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1420; --bg2:#161d2e; --card:#1b2436; --card2:#212c42;
+    --border:#2b3652; --text:#eaf0ff; --muted:#93a0bf;
+    --accent:#5b8def; --accent2:#7dd3fc;
+    --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --bad2:#f43f5e;
+    --purple:#a78bfa;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:"Segoe UI","Tahoma",Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 20% -10%, #1c2740 0%, var(--bg) 60%);
+    color:var(--text); min-height:100vh;
+  }
+  header{
+    padding:22px 28px; background:linear-gradient(90deg,#131a2b,#1a2338);
+    border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:14px; position:sticky; top:0; z-index:50;
+  }
+  .title-wrap{display:flex; align-items:center; gap:14px;}
+  .logo{
+    width:44px; height:44px; border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),var(--purple));
+    display:flex; align-items:center; justify-content:center; font-size:22px;
+  }
+  h1{font-size:19px; margin:0;}
+  .sub{color:var(--muted); font-size:12.5px; margin-top:2px;}
+  .btn{
+    background:linear-gradient(135deg,var(--accent),#3b6fd8); color:#fff; border:none;
+    padding:10px 18px; border-radius:10px; font-size:14px; cursor:pointer; font-weight:600;
+    transition:.15s; display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(91,141,239,.35);}
+  .btn.secondary{background:var(--card2); border:1px solid var(--border); color:var(--text);}
+  .btn:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+  input[type=file]{display:none;}
+  main{padding:24px 28px 60px;}
+  .hidden{display:none !important;}
+
+  /* upload screen */
+  .upload-zone{
+    max-width:640px; margin:60px auto; background:var(--card); border:1px dashed var(--border);
+    border-radius:18px; padding:50px 30px; text-align:center;
+  }
+  .upload-zone .icon{font-size:46px; margin-bottom:14px;}
+  .upload-zone h2{margin:0 0 8px; font-size:18px;}
+  .upload-zone p{color:var(--muted); font-size:13.5px; line-height:1.8; margin:0 0 22px;}
+
+  /* progress */
+  .progress-wrap{max-width:640px; margin:80px auto; text-align:center;}
+  .progress-bar{height:10px; background:var(--card2); border-radius:6px; overflow:hidden; margin-top:18px;}
+  .progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .2s;}
+  .progress-label{color:var(--muted); margin-top:10px; font-size:13px;}
+
+  /* summary cards */
+  .summary-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:22px;}
+  .stat-card{
+    background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px;
+  }
+  .stat-card .num{font-size:24px; font-weight:700;}
+  .stat-card .lbl{color:var(--muted); font-size:12.5px; margin-top:4px;}
+  .stat-card.total .num{color:var(--accent2);}
+  .stat-card.viol .num{color:var(--bad);}
+  .stat-card.clean .num{color:var(--ok);}
+  .stat-card.dup .num{color:var(--purple);}
+
+  .chart-card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:22px;}
+  .chart-card h3{margin:0 0 14px; font-size:15px;}
+  canvas#catChart{max-height:280px;}
+
+  /* category grid */
+  .grid-title{font-size:15px; margin:0 0 14px; color:var(--text); display:flex; align-items:center; gap:8px;}
+  .cat-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; margin-bottom:26px;}
+  .cat-card{
+    background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px;
+    cursor:pointer; transition:.15s; position:relative; overflow:hidden;
+  }
+  .cat-card:hover{border-color:var(--accent); transform:translateY(-2px);}
+  .cat-card.active{border-color:var(--accent2); box-shadow:0 0 0 2px rgba(125,211,252,.25) inset;}
+  .cat-card .cat-name{font-weight:700; font-size:14.5px; margin-bottom:10px;}
+  .cat-card .row{display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); margin-top:4px;}
+  .cat-card .row b{color:var(--text); font-weight:600;}
+  .cat-card .bar{height:6px; border-radius:4px; background:var(--card2); margin-top:10px; overflow:hidden;}
+  .cat-card .bar-fill{height:100%; background:linear-gradient(90deg,var(--warn),var(--bad));}
+  .cat-card .pct{position:absolute; top:14px; left:14px; font-size:11px; padding:3px 8px; border-radius:20px; background:var(--card2); color:var(--muted);}
+  .cat-card .pct.good{background:rgba(34,197,94,.15); color:#86efac;}
+  .cat-card .pct.mid{background:rgba(245,158,11,.15); color:#fcd34d;}
+  .cat-card .pct.bad{background:rgba(239,68,68,.15); color:#fca5a5;}
+
+  /* outEye stat-card variants */
+  .stat-card.codes .num{color:var(--accent2);}
+  .stat-card.inside .num{color:var(--ok);}
+  .stat-card.relatives .num{color:var(--warn);}
+  .stat-card.outside .num{color:var(--bad2);}
+
+  /* أقسام التقرير المكدّسة (منطقة/مكتب/مشرف/موزع) - كل قسم بعرض كامل تحت التاني */
+  .stack-section{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:22px;}
+  .stack-section .stack-head{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px;}
+  .stack-section .stack-title{font-size:15.5px; font-weight:700; display:flex; align-items:center; gap:8px;}
+  .stack-section .stack-title .badge-count{font-size:11px; font-weight:600; color:var(--muted); background:var(--card2); padding:3px 9px; border-radius:20px;}
+  .stack-section canvas{margin-bottom:18px;}
+  .chart-box{position:relative; width:100%; height:230px;}
+  .chart-box.donut{height:260px; max-width:420px; margin:0 auto;}
+  .topn-toggle{display:flex; gap:6px;}
+  .topn-toggle .chip{padding:5px 12px; font-size:12px;}
+
+  /* شريط رفع الملف المصغّر بعد وجود بيانات */
+  .upload-collapsed{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 18px; margin-bottom:20px;
+  }
+  .upload-collapsed .left{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13px;}
+
+  /* filters */
+  .filters{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;
+    background:var(--card); border:1px solid var(--border); padding:14px 16px; border-radius:14px;
+  }
+  select, .search-input{
+    background:var(--card2); border:1px solid var(--border); color:var(--text);
+    padding:9px 12px; border-radius:9px; font-size:13.5px; font-family:inherit;
+  }
+  .search-input{flex:1; min-width:180px;}
+  .chip{
+    padding:6px 12px; border-radius:20px; font-size:12.5px; border:1px solid var(--border);
+    background:var(--card2); cursor:pointer; color:var(--muted);
+  }
+  .chip.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+
+  /* table */
+  .table-wrap{background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:auto;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    background:var(--card2); padding:12px 10px; text-align:right; color:var(--muted);
+    font-weight:600; position:sticky; top:0; border-bottom:1px solid var(--border);
+  }
+  tbody td{padding:10px; border-bottom:1px solid var(--border); vertical-align:top;}
+  tbody tr:hover{background:rgba(91,141,239,.06);}
+  .tag{
+    display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; margin:2px;
+    background:rgba(239,68,68,.15); color:#fca5a5; border:1px solid rgba(239,68,68,.35);
+  }
+  .tag.dup{background:rgba(167,139,250,.15); color:#c4b5fd; border-color:rgba(167,139,250,.35);}
+  .muted{color:var(--muted);}
+  .pager{display:flex; justify-content:space-between; align-items:center; padding:14px 16px; gap:10px; flex-wrap:wrap;}
+  .pager span{color:var(--muted); font-size:13px;}
+  .page-numbers{display:flex; gap:4px; align-items:center; flex-wrap:wrap;}
+  .page-numbers button{
+    min-width:32px; height:32px; padding:0 6px; border-radius:8px; border:1px solid var(--border);
+    background:var(--card2); color:var(--text); cursor:pointer; font-size:12.5px;
+  }
+  .page-numbers button.active{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700;}
+  .page-numbers button:disabled{opacity:.4; cursor:not-allowed;}
+  .page-numbers .ellipsis{color:var(--muted); padding:0 4px;}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--card2); border:1px solid var(--border); padding:12px 20px; border-radius:12px;
+    font-size:13.5px; z-index:100; box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-wrap">
+    <div class="logo">🛡️</div>
+    <div>
+      <h1>عبدالمعز اسم وصفة التسليم والتكرار</h1>
+      <div class="sub" id="fileInfo">لم يتم رفع ملف بعد</div>
+    </div>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button class="btn secondary" id="settingsBtn">⚙️ إعدادات التبعية الهرمية</button>
+    <button class="btn secondary hidden" id="newFileBtn">📂 رفع ملف جديد</button>
+    <button class="btn hidden" id="exportBtn">⬇️ تصدير المخالفات Excel</button>
+  </div>
+</header>
+
+<!-- نافذة إعدادات التبعية الهرمية (المنطقة/المكتب/المشرف مقابل كود الموزع) -->
+<div id="settingsModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:200; display:flex; align-items:center; justify-content:center;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:26px; max-width:560px; width:92%; max-height:85vh; overflow:auto;">
+    <h2 style="margin:0 0 6px; font-size:17px;">⚙️ إعدادات التبعية الهرمية</h2>
+    <p class="sub" style="line-height:1.9; margin:0 0 18px;">
+      ارفع ملف إكسيل به 4 أعمدة: <b>كود الموزع</b>، <b>المشرف المسئول</b>، <b>المكتب</b>، <b>المنطقة</b>.
+      هيتم ربط كل صف بيانات بكود الموزع عبر عمود <b>FLYER</b> في ملف التسليمات، واستخدام التبعية في الفلاتر والتقارير والتصدير.
+      البيانات بتتحفظ في المتصفح، مش محتاج ترفعها كل مرة.
+    </p>
+    <div id="mappingStatus" class="sub" style="margin-bottom:14px;">لا يوجد ملف تبعية محمّل حاليًا.</div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <label class="btn" for="mappingFileInput">📂 رفع ملف التبعية</label>
+      <input type="file" id="mappingFileInput" accept=".xlsx,.xls">
+      <button class="btn secondary" id="clearMappingBtn">🗑️ مسح التبعية المحفوظة</button>
+      <button class="btn secondary" id="closeSettingsBtn">إغلاق</button>
+    </div>
+</div>
+</div>
+
+<div class="filters" style="margin:20px 28px 0;">
+  <span class="chip active" id="screenBtnMain">📋 مخالفات الاسم والتكرار</span>
+  <span class="chip" id="screenBtnOutEye">👁 تسليمات داخل/خارج العين</span>
+</div>
+
+<main id="screenMain">
+
+  <!-- Upload Screen -->
+  <div class="upload-zone" id="uploadZone">
+    <div class="icon">📊</div>
+    <h2>ارفع ملف الإكسيل</h2>
+    <p>الأعمدة المطلوبة: اسم العميل، صفة المستلم، اسم المستلم (وعنوان العميل لفحص التكرار).<br>
+    يدعم البرنامج معالجة أكثر من ١٠٠ ألف صف بدون بطء.</p>
+    <label class="btn" for="fileInput">اختيار ملف Excel</label>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+  </div>
+
+  <!-- Progress Screen -->
+  <div class="progress-wrap hidden" id="progressWrap">
+    <h2 id="progressTitle">جاري قراءة الملف...</h2>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0%</div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsWrap" class="hidden">
+
+    <div class="summary-row" id="summaryRow"></div>
+
+    <div class="chart-card">
+      <h3>عدد المخالفات حسب صفة المستلم</h3>
+      <canvas id="catChart"></canvas>
+    </div>
+
+    <div class="grid-title">📋 صفات التسليم وعدد المخالفات بها (اضغط لتصفية الجدول)</div>
+    <div class="cat-grid" id="catGrid"></div>
+
+    <div class="filters">
+      <select id="regionFilter"><option value="ALL">كل المناطق</option></select>
+      <select id="officeFilter"><option value="ALL">كل المكاتب</option></select>
+      <select id="supervisorFilter"><option value="ALL">كل المشرفين</option></select>
+      <select id="typeFilter">
+        <option value="ALL">كل أنواع المخالفات</option>
+      </select>
+      <input class="search-input" id="searchInput" placeholder="بحث باسم العميل أو المستلم...">
+      <span class="chip active" data-scope="violations" id="scopeViolations">عرض المخالفات فقط</span>
+      <span class="chip" data-scope="all" id="scopeAll">عرض كل الصفوف</span>
+      <span class="chip" id="clearCatBtn">✖ إلغاء تصفية الصفة</span>
+    </div>
+    <div class="summary-row" id="hierarchySummaryRow" style="margin-bottom:16px;"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>صفة المستلم</th>
+            <th>اسم العميل</th>
+            <th>اسم المستلم</th>
+            <th>عنوان العميل</th>
+            <th>zip5</th>
+            <th>كود الموزع (FLYER)</th>
+            <th>المنطقة</th>
+            <th>المكتب</th>
+            <th>المشرف</th>
+            <th>المخالفات</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="pager">
+        <span id="pageInfo">-</span>
+        <div class="page-numbers" id="pageNumbers"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- تقرير التكرار المنفصل (للعلم فقط) -->
+  <div id="dupReportWrap" class="hidden" style="margin-top:36px; padding-top:28px; border-top:2px dashed var(--border);">
+    <div class="grid-title" style="color:var(--purple);">
+      🔔 تنويه: تقرير التكرار (للعلم فقط - ليس مخالفة عدم مطابقة)
+    </div>
+    <p class="sub" style="margin:-4px 0 16px; max-width:820px; line-height:1.9;">
+      يوضح هذا التقرير حالات تكرار اسم المستلم لأكثر من عنوان عميل مختلف، وذلك لباقي صفات التسليم
+      (السكرتارية، الخدم، الاقارب، موظف استقبال، الزوج، الزوجة، امن وحارس، تسليم الفرع).
+      هذا التقرير للعلم والمتابعة فقط، ولا يُحتسب ضمن مخالفات عدم المطابقة أعلاه.
+    </p>
+    <div class="cat-grid" id="dupCatGrid" style="margin-bottom:20px;"></div>
+
+    <div class="filters">
+      <span class="chip active" id="dupViewAll">كل صفوف التكرار</span>
+      <span class="chip" id="dupViewTop10">🏆 أعلى ١٠ أسماء مستلمين تكرارًا (حسب عدد التسليمات)</span>
+    </div>
+
+    <!-- عرض: أعلى ١٠ مستلمين حسب عدد التسليمات، مع تمييز كل عنوان مختلف بدرجة أحمر -->
+    <div class="table-wrap hidden" id="dupTop10Wrap" style="margin-bottom:20px;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>اسم المستلم</th>
+            <th>عدد التسليمات</th>
+            <th>عدد العناوين المختلفة</th>
+            <th>العناوين (كل عنوان بدرجة لون مختلفة)</th>
+            <th>zip5</th>
+          </tr>
+        </thead>
+        <tbody id="dupTop10Body"></tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap" id="dupDetailWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>صفة المستلم</th>
+            <th>اسم العميل</th>
+            <th>اسم المستلم</th>
+            <th>عنوان العميل</th>
+            <th>zip5</th>
+            <th>كود الموزع (FLYER)</th>
+            <th>المنطقة</th>
+            <th>المكتب</th>
+            <th>المشرف</th>
+            <th>عناوين/عملاء آخرون بنفس اسم المستلم</th>
+          </tr>
+        </thead>
+        <tbody id="dupTableBody"></tbody>
+      </table>
+      <div class="pager">
+        <span id="dupPageInfo">-</span>
+        <div class="page-numbers" id="dupPageNumbers"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="screenOutEye" class="hidden" style="padding:24px 28px 60px;">
+
+  <div class="upload-zone" id="outEyeUploadZone" style="margin-bottom:26px;">
+    <div class="icon">👁️</div>
+    <h2>ارفع ملف تسليمات داخل/خارج العين</h2>
+    <p>
+      الأعمدة المطلوبة: كود الموزع، ثم عمود لكل صفة تسليم (العميل نفسه، الاب، الابناء، الاخت، الاخ، الام، الزوج،
+      الزوجة، الخدم، الاقارب، وأي صفات أخرى زي: اجمالي سكرتارية، موظف استقبال، بريد، موظف بريد، تسليم فرع، أمن وحارس...)
+      وقيمة كل خلية = عدد التسليمات بهذه الصفة لهذا الكود.<br>
+      المكتب/المشرف/المنطقة بتتحدد تلقائيًا من نفس ملف التبعية الهرمية المستخدم فى تقرير المخالفات
+      (نفس الكود، من إعدادات ⚙️ التبعية الهرمية بأعلى الصفحة). أي رفعة جديدة لنفس الكود ونفس اسم الإصدار
+      بتستبدل بيانات هذا الكود القديمة فى هذا الإصدار بس (باقي الإصدارات المرفوعة بتفضل زي ما هى).
+    </p>
+    <input type="text" id="outEyeVersionInput" placeholder="اسم الإصدار لهذه الرفعة (مثال: يوليو 2026) *"
+      style="max-width:320px;margin:0 auto 14px;display:block;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-family:inherit;font-size:13.5px;">
+    <label class="btn" for="outEyeFileInput">اختيار ملف Excel</label>
+    <input type="file" id="outEyeFileInput" accept=".xlsx,.xls">
+  </div>
+
+  <!-- شريط مصغّر يظهر بدل شاشة الرفع الكبيرة بمجرد وجود بيانات محمّلة -->
+  <div class="upload-collapsed hidden" id="outEyeUploadCollapsed">
+    <div class="left">📂 <span id="outEyeUploadCollapsedInfo">تم رفع بيانات هذا التقرير</span></div>
+    <span class="btn secondary" id="outEyeExpandUploadBtn" style="padding:8px 14px;font-size:12.5px;">➕ رفع إصدار جديد</span>
+  </div>
+
+  <div class="filters" id="outEyeVersionChipsWrap">
+    <span class="sub" style="margin-inline-end:6px;">👁 الإصدارات المرفوعة (<span id="outEyeVersionCount">0</span>):</span>
+    <span class="chip muted" id="outEyeNoVersions">لا يوجد بعد</span>
+  </div>
+
+  <div id="outEyeResultsWrap" class="hidden">
+
+    <div class="summary-row" id="outEyeSummaryRow"></div>
+
+    <div class="chart-card">
+      <h3>التوزيع العام: داخل العين / الاقارب / خارج العين</h3>
+      <div class="chart-box donut"><canvas id="outEyeOverviewChart"></canvas></div>
+    </div>
+
+    <div class="filters">
+      <select id="outEyeVersionFilter"><option value="ALL">كل الإصدارات</option></select>
+      <select id="outEyeRegionFilter"><option value="ALL">كل المناطق</option></select>
+      <select id="outEyeOfficeFilter"><option value="ALL">كل المكاتب</option></select>
+      <select id="outEyeSupervisorFilter"><option value="ALL">كل المشرفين</option></select>
+      <input class="search-input" id="outEyeSearchInput" placeholder="بحث بكود الموزع...">
+      <span class="chip" id="outEyeExportBtn">📊 تصدير إكسيل</span>
+      <span class="chip" id="outEyeClearBtn" style="border-color:var(--bad);color:var(--bad2);">🗑 مسح كل بيانات هذا التقرير</span>
+    </div>
+
+    <div class="filters" style="margin-bottom:22px;">
+      <span class="sub" style="margin-inline-end:6px;">🔢 عدد الصفوف الظاهرة فى كل تقرير (مرتّبة حسب الأعلى نسبة خارج العين):</span>
+      <select id="outEyeTopNSelect">
+        <option value="10" selected>أعلى ١٠ صفوف</option>
+        <option value="25">أعلى ٢٥ صف</option>
+        <option value="50">أعلى ٥٠ صف</option>
+        <option value="ALL">عرض الكل</option>
+      </select>
+    </div>
+
+    <div class="grid-title">📊 التقارير التفصيلية — مرتّبة تنازليًا حسب الأعلى نسبة خارج العين % (اضغط على أي بطاقة لتصفية الجدول أدناه)</div>
+
+    <div class="stack-section" id="outEyeSectionRegion">
+      <div class="stack-head">
+        <div class="stack-title">🗺️ حسب المنطقة <span class="badge-count" id="outEyeRegionCount">0</span></div>
+      </div>
+      <div class="chart-box"><canvas id="outEyeRegionChart"></canvas></div>
+      <div class="cat-grid" id="outEyeRegionGrid"></div>
+    </div>
+
+    <div class="stack-section" id="outEyeSectionOffice">
+      <div class="stack-head">
+        <div class="stack-title">🏢 حسب المكتب <span class="badge-count" id="outEyeOfficeCount">0</span></div>
+      </div>
+      <div class="chart-box"><canvas id="outEyeOfficeChart"></canvas></div>
+      <div class="cat-grid" id="outEyeOfficeGrid"></div>
+    </div>
+
+    <div class="stack-section" id="outEyeSectionSupervisor">
+      <div class="stack-head">
+        <div class="stack-title">👤 حسب المشرف <span class="badge-count" id="outEyeSupervisorCount">0</span></div>
+      </div>
+      <div class="chart-box"><canvas id="outEyeSupervisorChart"></canvas></div>
+      <div class="cat-grid" id="outEyeSupervisorGrid"></div>
+    </div>
+
+    <div class="stack-section" id="outEyeSectionDistributor">
+      <div class="stack-head">
+        <div class="stack-title">🚴 حسب الموزع <span class="badge-count" id="outEyeDistributorCount">0</span></div>
+      </div>
+      <div class="chart-box"><canvas id="outEyeDistributorChart"></canvas></div>
+      <div class="cat-grid" id="outEyeDistributorGrid"></div>
+    </div>
+
+    <div class="grid-title">تفصيل صفات التسليم لكل كود</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>كود الموزع</th><th>الإصدار</th><th>المنطقة</th><th>المكتب</th><th>المشرف</th>
+            <th>داخل العين</th><th>الاقارب</th><th>خارج العين</th><th>الإجمالي</th><th>تفصيل الصفات</th>
+          </tr>
+        </thead>
+        <tbody id="outEyeTableBody"></tbody>
+      </table>
+      <div class="pager">
+        <span id="outEyePageInfo">-</span>
+        <div class="page-numbers" id="outEyePageNumbers"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// دالة مساعدة للوصول لعناصر الصفحة بالـ id — لازم تتعرّف في أول حاجة في السكريبت
+// لأنها مستخدمة في أسطر كتير قبل ما كانت متعرّفة، وده كان بيوقف تنفيذ السكريبت كله
+// فورًا بمجرد تحميل الصفحة (خطأ "Cannot access '$' before initialization")،
+// وده السبب اللي كان بيخلي كل الأزرار (رفع الضبط، رفع الداتا، الفلاتر) من غير أي استجابة.
+const $ = (id)=>document.getElementById(id);
+
+/* ============================================================
+   1) التطبيع والمعالجة اللغوية
+============================================================ */
+const DIACRITICS_RE = /[\u064B-\u0652\u0670\u0640]/g;
+const DIGIT_RE = /[0-9\u0660-\u0669]/;
+// كل رموز الترقيم والفواصل المعروفة (عربي/إنجليزي) — بيتشالوا تمامًا ولا يُعتبروا فرق
+// بين اسمين، بما فيهم فواصل عربية زي ٬ ٫، علامات تنصيص/اقتباس متنوعة، شرطات طويلة، إلخ
+const PUNCT_RE = /[.,،؛;:\-_\/\\|"'`~!@#$%^&*()+=\[\]{}<>؟?٬٫«»‹›""''–—―…·°§±×÷¦‚„*]/g;
+// مسافات ورموز غير مرئية (زيرو-ويدث، nbsp، إلخ) بتيجي غالبًا من نسخ/لصق إكسل ومش
+// ظاهرة للعين، فلازم تتشال أو تتحول لمسافة عادية قبل أي معالجة تانية عشان متأثرش
+// على المقارنة وتظهر مخالفة وهمية بسبب رمز غير مرئي فاصل بين حروف الاسم
+const INVISIBLE_RE = /[\u200B\u200C\u200D\uFEFF\u00AD]/g;
+const EXOTIC_SPACE_RE = /[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g;
+
+// تنظيف أولي: يتحول أي مسافة غريبة (nbsp وغيرها) لمسافة عادية، ويشيل أي رمز غير
+// مرئي تمامًا — بيتطبق قبل أي خطوة تانية فى normalizeChar/tokenize/squashRaw
+function preClean(str){
+  return String(str).replace(INVISIBLE_RE,'').replace(EXOTIC_SPACE_RE,' ');
+}
+
+function normalizeChar(w){
+  w = preClean(w);
+  w = w.replace(DIACRITICS_RE,'');
+  w = w.replace(PUNCT_RE,'');
+  w = w.replace(/[أإآ]/g,'ا');
+  w = w.replace(/ى/g,'ي');
+  w = w.replace(/ة/g,'ه');
+  w = w.replace(/ؤ/g,'و').replace(/ئ/g,'ي');
+  return w;
+}
+
+function tokenize(name){
+  if(!name) return [];
+  const cleaned = preClean(String(name)).trim().replace(/[,،]/g, ' '); // الفواصل تُعامل كفواصل كلمات
+  const words = cleaned.split(/\s+/);
+  const raw = [];
+  for(const w of words){
+    // بدل إسقاط الكلمة كاملة لو فيها رقم ملتحم (زي "احمد2" أو "3محمد")، نشيل الرقم
+    // بس ونحتفظ بباقي حروف الاسم، عشان الاسم الثلاثي الحقيقي متتحسبش مخالفة غلط
+    const wNoDigits = String(w).replace(/[0-9\u0660-\u0669]/g,'');
+    const w2 = normalizeChar(wNoDigits);
+    if(w2) raw.push(w2);
+  }
+  // مسافة زيادة غير مقصودة جوه اسم واحد (مثال: "نجلا ء" بدل "نجلاء") بتولّد "كلمة"
+  // من حرف واحد بس؛ ده مش اسم قائم بذاته أبدًا فى العربي، فبندمجها فى الكلمة اللي
+  // قبلها (أو اللي بعدها لو كانت أول كلمة) عشان زيادة مسافة عرضية متتحسبش مخالفة اسم
+  const out = [];
+  for(const t of raw){
+    if(t.length === 1 && out.length > 0){
+      out[out.length-1] = out[out.length-1] + t;
+    } else {
+      out.push(t);
+    }
+  }
+  if(out.length > 1 && out[0].length === 1){
+    out[1] = out[0] + out[1];
+    out.shift();
+  }
+  return out;
+}
+
+// يلصق مجموعة كلمات منمّطة في نص واحد بدون مسافات، لتفادي مشاكل فصل/لصق الأسماء
+// (مثال: "ابو زيد" في اسم العميل مقابل "ابوزيد" في اسم المستلم يجب اعتبارهما متطابقين)
+function squash(tokens){ return tokens.join(''); }
+
+// مسافة ليفنشتاين (عدد التعديلات: إضافة/حذف/استبدال حرف) بين نصين
+function levenshtein(a, b){
+  const m = a.length, n = b.length;
+  if(m === 0) return n;
+  if(n === 0) return m;
+  let prev = new Array(n+1);
+  for(let j=0;j<=n;j++) prev[j] = j;
+  for(let i=1;i<=m;i++){
+    const cur = new Array(n+1);
+    cur[0] = i;
+    for(let j=1;j<=n;j++){
+      const cost = a[i-1]===b[j-1] ? 0 : 1;
+      cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost);
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
+// مقارنة نصين مع تحمّل حرف زائد/ناقص/مختلف واحد (خطأ إملائي بسيط لا يُعتبر مخالفة)
+function fuzzyEqual(a, b, maxDist){
+  if(maxDist===undefined) maxDist = 1;
+  if(a === b) return true;
+  if(Math.abs(a.length-b.length) > maxDist) return false;
+  return levenshtein(a,b) <= maxDist;
+}
+
+// بحث عن "needle" داخل "haystack" مع تحمّل حرف زائد واحد (إملائي) في أي جزء من النص
+function fuzzyIncludes(haystack, needle, maxDist){
+  if(maxDist===undefined) maxDist = 1;
+  if(!needle) return false;
+  if(haystack.includes(needle)) return true;
+  const nLen = needle.length;
+  for(let start=0; start<=haystack.length-1; start++){
+    for(let len=Math.max(1,nLen-maxDist); len<=nLen+maxDist; len++){
+      if(start+len>haystack.length) break;
+      const sub = haystack.substr(start,len);
+      if(levenshtein(sub, needle) <= maxDist) return true;
+    }
+  }
+  return false;
+}
+
+// تنميط نص خام كامل (بدون المرور بتقسيم الكلمات): بيشيل المسافات والأرقام والرموز والفواصل
+// مباشرة من النص الأصلي، مفيد لما تكون رموز/أرقام ملزوقة بكلمة زي "ام." أو "ام-حسين" بدون مسافة
+function squashRaw(str){
+  if(!str) return '';
+  let s = preClean(String(str));
+  s = s.replace(DIACRITICS_RE,'');
+  s = s.replace(/[0-9\u0660-\u0669]/g,'');
+  s = s.replace(PUNCT_RE,'');
+  s = s.replace(/\s+/g,'');
+  s = s.replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/ؤ/g,'و').replace(/ئ/g,'ي');
+  return s;
+}
+
+// يبحث عن سلسلة أسماء المستلم (recvChainTokens) داخل اسم العميل الكامل، مع تجربة
+// إسقاط أي كلمات زيادة (زيادة/عنوان اتلصق بالغلط) من آخر السلسلة تدريجيًا حتى يلاقي تطابق.
+// المطابقة تتحمل حرف زائد/ناقص واحد (خطأ إملائي بسيط). بيرجع true لو لقى تطابق كافٍ
+// (على الأقل اسمين)، وبيدعم كمان حالة العكس: العميل عنده بيانات أقل من المستلم
+// (اسم زيادة عند المستلم مش موجود عند العميل إطلاقًا = مقبول).
+// أجزاء أسماء مركبة شائعة تتكون من كلمتين لكنها منطقيًا اسم واحد (كنية/اسم مركب)
+// زي: عبدالله/عبدالحميد (عبد+...)، ابوبشار (ابو+...)، فتح الله/فرج الله (...+الله)، ام كلثوم (ام+...)
+// لازم تُدمج في كلمة واحدة قبل حساب ترتيب الأسماء، وإلا يختل ترتيب "الاسم الثاني والثالث"
+// ويظهر مطابقة خاطئة لصفة الأخ/الأخت.
+const COMPOUND_FIRST_PARTS = new Set(['عبد','ابو','ابي','بو','ام'].map(normalizeChar));
+const COMPOUND_SECOND_PARTS = new Set(['الله'].map(normalizeChar));
+
+function mergeCompoundTokens(tokens){
+  const out = [];
+  let i = 0;
+  while(i < tokens.length){
+    const cur = tokens[i];
+    const next = tokens[i+1];
+    if(next && (COMPOUND_FIRST_PARTS.has(cur) || COMPOUND_SECOND_PARTS.has(next))){
+      out.push(cur+next);
+      i += 2;
+    } else {
+      out.push(cur);
+      i += 1;
+    }
+  }
+  return out;
+}
+
+function chainMatchesWithinCustomer(custTokens, recvChainTokens){
+  const custFull = squash(custTokens);
+  if(!custFull || recvChainTokens.length === 0) return false;
+  const minK = Math.min(2, recvChainTokens.length);
+  for(let k = recvChainTokens.length; k >= minK; k--){
+    const chunk = squash(recvChainTokens.slice(0,k));
+    if(chunk && fuzzyIncludes(custFull, chunk, 1)) return true;
+  }
+  // احتياطي: المستلم عنده سلسلة أطول من كل بيانات العميل المتاحة (زيادة في الآخر مقبولة)
+  const recvFull = squash(recvChainTokens);
+  if(recvFull.length >= custFull.length && fuzzyEqual(recvFull.slice(0,custFull.length), custFull, 1)) return true;
+  return false;
+}
+
+const MALE_NAMES = new Set([
+ "محمد","احمد","علي","حسن","حسين","ابراهيم","عبدالله","عبد الله","عمر","خالد","مصطفي",
+ "وليد","طارق","عادل","ياسر","هشام","كريم","تامر","عمرو","شريف","ايمن","رامي","حازم","وائل","نبيل",
+ "سامي","ماجد","رضا","فتحي","جمال","صلاح","فاروق","رشدي","يوسف","انور","سيد","السيد",
+ "فوزي","حفني","ثروت","قطيم","اشرف","عصام","مختار","بكري","عاطف","عيد","هاني",
+ "مروان","اسلام","حمزه","غالب","حاتم","مامون","محمود","نصير",
+ "شكري","سليمان","قمحاوي","اسماعيل","جابر","سامح","طاهر","حسام","لطفي",
+ "كمال","بدوي","ناجي","حنفي","احمد","صبري","سعيد","محمود","فراج","فرج"
+].map(normalizeChar));
+
+function isMaleLike(word){ return MALE_NAMES.has(word); }
+
+// يكتشف هل اسم المستلم مكتوب فعليًا بصيغة "أم + اسم" (كنية) — يعني كلمة "أم" منفصلة
+// عن باقي الاسم بمسافة أو رمز فاصل (نقطة/شرطة) وليست مجرد أول حرفين من اسم علم عادي
+// زي "امال" أو "امين" أو "امونه" (دي مش نفس صيغة الكنية "أم فلان" إطلاقًا).
+function detectMotherAmFormat(recipientRaw){
+  if(!recipientRaw) return {isAmFormat:false};
+  let raw = preClean(String(recipientRaw)).trim();
+  raw = raw.replace(DIACRITICS_RE,'').replace(/[أإآ]/g,'ا');
+  // "أم" لازم تكون كلمة قائمة بذاتها ومتبوعة بفاصل (مسافة/نقطة/شرطة/تحته خط) ثم باقي الاسم
+  const m = raw.match(/^ام[\s.,\-_٫،]+([\s\S]+)$/);
+  if(m) return {isAmFormat:true, afterAmRaw:m[1]};
+  return {isAmFormat:false};
+}
+
+/* أنواع المخالفات */
+const VIOLATION_LABELS = {
+  NOT_TRIPARTITE: "الاسم غير ثلاثي",
+  MISMATCH_SELF: "لا يطابق اسم العميل (العميل نفسه)",
+  MISMATCH_FATHER_SHORT: "اسم العميل قصير - لا يمكن التحقق (الأب)",
+  MISMATCH_FATHER: "لا يطابق قاعدة صفة الأب",
+  MISMATCH_SIBLING_LEN: "طول الاسم غير كافٍ (أخ/أخت)",
+  MISMATCH_SIBLING_SAMEFIRST: "الاسم الأول مطابق للعميل (أخ/أخت)",
+  MISMATCH_SIBLING: "لا يطابق قاعدة صفة الأخ/الأخت",
+  MISMATCH_MOTHER_GENDER: "الاسم يبدو اسم رجل (صفة: الأم)",
+  MISMATCH_SON_LEN: "طول الاسم غير كافٍ (الأبناء)",
+  MISMATCH_SON: "لا يطابق قاعدة صفة الأبناء"
+};
+
+/* ============================================================
+   2) محرك القواعد
+============================================================ */
+function checkRow(customerRaw, recipientRaw, relation){
+  const cust = tokenize(customerRaw);
+  const recv = tokenize(recipientRaw);
+  const violations = [];
+
+  // العميل تعتبر "سيدة" إذا أول اسم في اسمها ليس من أسماء الرجال المعروفة
+  const custIsFemale = cust.length > 0 && !isMaleLike(cust[0]);
+
+  // قاعدة الأبناء الخاصة بمطابقة اسم الأب لا تُطبق إذا كانت العميلة سيدة
+  const sonNameRuleApplies = (relation === 'الابناء' && !custIsFemale);
+
+  // شرط الثلاثي يُطبق على كل الصفوف ما عدا "العميل نفسه": لو الاسم مكتوب من غير
+  // مسافات خالص (زي "خالداحمدحماد") بيبقى توكن واحد بس رغم إنه اسم ثلاثي صحيح فعلاً،
+  // فعدّ الكلمات المفصولة بمسافة مش مقياس موثوق هنا. المطابقة على أول 3 أسماء فى فحص
+  // "العميل نفسه" أدناه (على مستوى الحروف بعد إزالة كل المسافات) بتتحقق من الشرط ده
+  // بدقة أعلى، فمفيش داعي لفحص منفصل يكرر نفس الغرض بطريقة أضعف.
+  if(relation !== 'العميل نفسه' && recv.length < 3) violations.push('NOT_TRIPARTITE');
+
+  if(relation === 'العميل نفسه'){
+    // يكفي تطابق أول 3 أسماء فقط (بتحمّل حرف زائد/ناقص واحد)؛ أي إضافة بعدها
+    // (أرقام/رموز/نقاط اتلصقت أو حتى اسم رابع) تُتجاهل تمامًا
+    if(!fuzzyEqual(squash(recv.slice(0,3)), squash(cust.slice(0,3)), 1)) violations.push('MISMATCH_SELF');
+  } else if(relation === 'الاب'){
+    if(cust.length < 2) violations.push('MISMATCH_FATHER_SHORT');
+    else {
+      // اسم المستلم (الأب) بالكامل هو السلسلة المتوقعة؛ بنبحث عنها جوه اسم العميل
+      // الكامل، مع تجربة إسقاط أي زيادة (عنوان/رموز اتلصقت) من آخر اسم المستلم
+      if(!chainMatchesWithinCustomer(cust, recv)) violations.push('MISMATCH_FATHER');
+    }
+  } else if(relation === 'الاخ' || relation === 'الاخت'){
+    // دمج الأسماء المركبة (فتح الله - فرج الله - ام كلثوم - عبدالله - عبدالحميد - ابوبشار
+    // وما شابهها من نفس النمط) في وحدة واحدة، عشان ترتيب "الاسم الثاني والثالث" ميتزحزحش
+    // بسبب اسم مركب من كلمتين ويتحسب غلط كمخالفة
+    const custM = mergeCompoundTokens(cust);
+    const recvM = mergeCompoundTokens(recv);
+    if(custM.length < 3 || recvM.length < 3){
+      violations.push('MISMATCH_SIBLING_LEN');
+    } else {
+      // تطابق حرفي دقيق هنا (بدون تسامح) لأن أسماء عربية كتير قريبة من بعض
+      // بس مختلفة فعليًا (زي محمد/محمود، علا/علاء)، فمينفعش نعتبرهم "نفس الاسم"
+      if(recvM[0] === custM[0]) violations.push('MISMATCH_SIBLING_SAMEFIRST');
+      if(!chainMatchesWithinCustomer(custM, recvM.slice(1,3))) violations.push('MISMATCH_SIBLING');
+    }
+  } else if(relation === 'الام'){
+    // لو الاسم مكتوب فعلاً بصيغة الكنية "أم + اسم" (كلمة "أم" منفصلة عن الباقي)،
+    // فهو مقبول ومطابق طالما استوفى شرط الثلاثي (مطبق أعلاه) — بدون أي اشتراط
+    // لتطابق الاسم اللي بعد "أم" مع اسم العميل، لأن اسم الأم لا يلزم تشابهه مع ابنها/ابنتها
+    const amInfo = detectMotherAmFormat(recipientRaw);
+    if(!amInfo.isAmFormat){
+      // مش مكتوب بصيغة الكنية، يبقى اسم علم عادي: التحقق الوحيد المتبقي هو
+      // ألا يكون اسم رجل واضح (الصفة أم = سيدة)
+      if(recv.length >= 1 && isMaleLike(recv[0])) violations.push('MISMATCH_MOTHER_GENDER');
+    }
+  } else if(relation === 'الابناء'){
+    if(sonNameRuleApplies){
+      if(recv.length < 2) violations.push('MISMATCH_SON_LEN');
+      // بعد اسم الابن نفسه (recv[0])، الباقي لازم يوجد داخل اسم العميل الكامل (كليًا أو جزئيًا)
+      else if(!chainMatchesWithinCustomer(cust, recv.slice(1))) violations.push('MISMATCH_SON');
+    }
+    // إذا كانت العميلة سيدة: تُلغى قاعدة مطابقة اسم الأب، ويُطبق فقط شرط الثلاثي (مطبق أعلاه)
+  }
+  // باقي الصفات: يُطبق شرط الثلاثي فقط (مطبق أعلاه)
+
+  return {violations, custTokens:cust, recvTokens:recv, custIsFemale};
+}
+
+/* ============================================================
+   3) حالة التطبيق
+============================================================ */
+/* ============================================================
+   0) إعدادات التبعية الهرمية (كود الموزع -> المشرف/المكتب/المنطقة)
+============================================================ */
+const HIERARCHY_STORAGE_KEY = 'violations_hierarchy_mapping_v1';
+let HIERARCHY_MAP = {}; // كود الموزع (منمّط) -> {code, supervisor, office, region}
+
+function normCode(v){
+  if(v==null) return '';
+  // خلايا الإكسل أحيانًا بترجع object لتاريخ/فورمولا/rich-text بدل نص/رقم مباشر
+  if(typeof v === 'object'){
+    if(v.text!=null) v = v.text;
+    else if(v.result!=null) v = v.result;
+    else if(v.richText) v = v.richText.map(t=>t.text).join('');
+  }
+  let s = String(v)
+    .replace(/[\u200B-\u200F\u202A-\u202E\uFEFF]/g, '') // إزالة المسافات والعلامات غير المرئية
+    .trim();
+  // تحويل الأرقام العربية (٠-٩) والفارسية (۰-۹) إلى أرقام إنجليزية
+  s = s.replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 1632))
+       .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 1776));
+  // كود رقمي جاء من إكسيل كـ "1050.0" -> "1050"
+  if(/^\d+\.0+$/.test(s)) s = s.replace(/\.0+$/, '');
+  return s;
+}
+
+function loadHierarchyMapping(){
+  try{
+    const raw = localStorage.getItem(HIERARCHY_STORAGE_KEY);
+    HIERARCHY_MAP = raw ? JSON.parse(raw) : {};
+  }catch(e){ HIERARCHY_MAP = {}; }
+  updateMappingStatusLabel();
+  buildHierarchyIndex();
+  populateRegionFilter();
+}
+
+function saveHierarchyMapping(map){
+  HIERARCHY_MAP = map;
+  try{ localStorage.setItem(HIERARCHY_STORAGE_KEY, JSON.stringify(map)); }catch(e){}
+  updateMappingStatusLabel();
+  refreshHierarchyFilters();
+}
+
+function updateMappingStatusLabel(){
+  const el = $('mappingStatus');
+  if(!el) return;
+  const count = Object.keys(HIERARCHY_MAP).length;
+  el.textContent = count > 0
+    ? `✅ محمّل حاليًا: ${count.toLocaleString('ar-EG')} كود موزع مرتبط بمشرف/مكتب/منطقة.`
+    : 'لا يوجد ملف تبعية محمّل حاليًا.';
+}
+
+async function parseMappingFile(file){
+  const buffer = await file.arrayBuffer();
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(buffer);
+  const ws = wb.worksheets[0];
+  const headerRow = ws.getRow(1).values;
+  const colMap = {};
+  headerRow.forEach((val, idx)=>{
+    if(!val) return;
+    const h = String(val).trim();
+    if(h.includes('كود الموزع') || h.toLowerCase().includes('branch')) colMap.code = idx;
+    else if(h.includes('المشرف')) colMap.supervisor = idx;
+    else if(h.includes('المكتب')) colMap.office = idx;
+    else if(h.includes('المنطقة')) colMap.region = idx;
+  });
+  if(!colMap.code){
+    throw new Error('لم يتم العثور على عمود "كود الموزع" في ملف التبعية.');
+  }
+  const map = {};
+  ws.eachRow({includeEmpty:false}, (row, rowNumber)=>{
+    if(rowNumber===1) return;
+    const code = normCode(row.getCell(colMap.code).value);
+    if(!code) return;
+    map[code] = {
+      code,
+      supervisor: colMap.supervisor ? normCode(row.getCell(colMap.supervisor).value) : '',
+      office: colMap.office ? normCode(row.getCell(colMap.office).value) : '',
+      region: colMap.region ? normCode(row.getCell(colMap.region).value) : ''
+    };
+  });
+  return map;
+}
+
+let HIERARCHY_INDEX = {regions:[], officesByRegion:{}, supervisorsByOffice:{}, allOffices:[], allSupervisors:[]};
+
+function buildHierarchyIndex(){
+  const regions = new Set(), officesByRegion = {}, supervisorsByOffice = {};
+  const allOffices = new Set(), allSupervisors = new Set();
+  for(const code in HIERARCHY_MAP){
+    const {region, office, supervisor} = HIERARCHY_MAP[code];
+    if(region) regions.add(region);
+    if(office) allOffices.add(office);
+    if(supervisor) allSupervisors.add(supervisor);
+    if(region && office){
+      if(!officesByRegion[region]) officesByRegion[region] = new Set();
+      officesByRegion[region].add(office);
+    }
+    if(office && supervisor){
+      if(!supervisorsByOffice[office]) supervisorsByOffice[office] = new Set();
+      supervisorsByOffice[office].add(supervisor);
+    }
+  }
+  HIERARCHY_INDEX = {
+    regions: [...regions].sort(),
+    officesByRegion: Object.fromEntries(Object.entries(officesByRegion).map(([k,v])=>[k,[...v].sort()])),
+    supervisorsByOffice: Object.fromEntries(Object.entries(supervisorsByOffice).map(([k,v])=>[k,[...v].sort()])),
+    allOffices: [...allOffices].sort(),
+    allSupervisors: [...allSupervisors].sort()
+  };
+}
+
+function fillSelect(selectEl, values, allLabel){
+  if(!selectEl) return;
+  const current = selectEl.value;
+  selectEl.innerHTML = `<option value="ALL">${allLabel}</option>` + values.map(v=>`<option value="${v}">${v}</option>`).join('');
+  selectEl.value = values.includes(current) ? current : 'ALL';
+}
+
+function populateRegionFilter(){
+  fillSelect($('regionFilter'), HIERARCHY_INDEX.regions, 'كل المناطق');
+}
+function populateOfficeFilter(regionValue){
+  const values = (regionValue && regionValue!=='ALL') ? (HIERARCHY_INDEX.officesByRegion[regionValue]||[]) : HIERARCHY_INDEX.allOffices;
+  fillSelect($('officeFilter'), values, 'كل المكاتب');
+}
+function populateSupervisorFilter(officeValue){
+  const values = (officeValue && officeValue!=='ALL') ? (HIERARCHY_INDEX.supervisorsByOffice[officeValue]||[]) : HIERARCHY_INDEX.allSupervisors;
+  fillSelect($('supervisorFilter'), values, 'كل المشرفين');
+}
+function refreshHierarchyFilters(){
+  buildHierarchyIndex();
+  populateRegionFilter();
+  populateOfficeFilter(FILTER_STATE.region);
+  populateSupervisorFilter(FILTER_STATE.office);
+}
+
+$('settingsBtn').addEventListener('click', ()=>{ $('settingsModal').classList.remove('hidden'); });
+$('closeSettingsBtn').addEventListener('click', ()=>{ $('settingsModal').classList.add('hidden'); });
+$('clearMappingBtn').addEventListener('click', ()=>{
+  if(!confirm('هل تريد مسح ملف التبعية الهرمية المحفوظ؟')) return;
+  saveHierarchyMapping({});
+  FILTER_STATE.region='ALL'; FILTER_STATE.office='ALL'; FILTER_STATE.supervisor='ALL';
+  showToast('تم مسح ملف التبعية');
+  if(PROCESSED.length){ processAllRows(); }
+});
+$('mappingFileInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  try{
+    const map = await parseMappingFile(file);
+    saveHierarchyMapping(map);
+    FILTER_STATE.region='ALL'; FILTER_STATE.office='ALL'; FILTER_STATE.supervisor='ALL';
+    showToast('تم رفع وحفظ ملف التبعية بنجاح ✅');
+    if(PROCESSED.length){ processAllRows(); }
+  }catch(err){
+    alert('خطأ في ملف التبعية: '+err.message);
+  }finally{
+    e.target.value = '';
+  }
+});
+loadHierarchyMapping();
+
+let RAW_ROWS = [];       // كل الصفوف كما هي
+let PROCESSED = [];      // بعد تطبيق القواعد
+let CATEGORY_STATS = {}; // إحصائيات المخالفات لكل صفة (بدون التكرار)
+let DUPLICATE_REPORT = [];  // مؤشرات الصفوف المكررة (تقرير منفصل للعلم - لغير صفات الارتباط الاسمي)
+let DUPLICATE_STATS = {};   // إحصائيات التكرار حسب الصفة
+let DUPLICATE_GROUPS = [];  // تجميع حسب اسم المستلم: {recipientName, relations, totalCount, distinctAddressCount, addressList, rowIdxs}
+
+// درجات احمر متدرجة لتمييز كل عنوان مختلف لنفس اسم المستلم (يتكرر الاستخدام لو العناوين أكتر من طول القائمة)
+const RED_SHADES = ['FFF8D7DA','FFF1AEB5','FFEA868F','FFDC3545','FFC22336','FFA71E2A','FF842029','FF58151C'];
+
+let FILTER_STATE = {cat:null, type:'ALL', scope:'violations', search:'', region:'ALL', office:'ALL', supervisor:'ALL'};
+populateOfficeFilter('ALL');
+populateSupervisorFilter('ALL');
+let PAGE = 1;
+const PAGE_SIZE = 100;
+let FILTERED_ROWS = [];
+
+
+function showToast(msg){
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+/* ============================================================
+   4) قراءة ملف الإكسيل
+============================================================ */
+$('fileInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  $('uploadZone').classList.add('hidden');
+  $('progressWrap').classList.remove('hidden');
+  $('progressTitle').textContent = 'جاري قراءة الملف...';
+  updateProgress(5, 'قراءة الملف...');
+
+  try{
+    const buffer = await file.arrayBuffer();
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buffer);
+    updateProgress(30, 'تحليل البيانات...');
+
+    const ws = wb.worksheets[0];
+    // تحديد الأعمدة من صف العناوين
+    const headerRow = ws.getRow(1).values; // index 0 فارغ
+    const colMap = {};
+    headerRow.forEach((val, idx)=>{
+      if(!val) return;
+      const h = String(val).trim();
+      const hUp = h.toUpperCase();
+      // الأعمدة الأساسية الأربعة: بيتقبل المسميات العربية القديمة، وكمان المسميات
+      // الإنجليزية الجديدة (Name / ADDRESS / STATUS / DEL_NAME) بمطابقة الاسم كامل
+      // (case-insensitive) عشان "DEL_NAME" ماتتلخبطش مع "Name"
+      if(h.includes('اسم العميل') || hUp==='NAME') colMap.customer = idx;
+      else if(h.includes('عنوان') || hUp==='ADDRESS') colMap.address = idx;
+      else if(h.includes('صفة المستلم') || hUp==='STATUS') colMap.relation = idx;
+      else if(h.includes('اسم المستلم') || hUp==='DEL_NAME') colMap.recipient = idx;
+      else if(h.toLowerCase().includes('branch')) colMap.branch = idx;
+      else if(/zip\s*5|zip\s*code|zipcode|postal|postcode|بريدي/i.test(h)) colMap.zip5 = idx;
+      else if(h.toLowerCase().includes('flyer')) colMap.flyer = idx;
+    });
+
+    if(!colMap.customer || !colMap.relation || !colMap.recipient){
+      throw new Error('لم يتم العثور على أعمدة (اسم العميل / صفة المستلم / اسم المستلم) — أو مسمياتها الجديدة (Name / STATUS / DEL_NAME) — في الملف. تأكد من أسماء الأعمدة.');
+    }
+
+    RAW_ROWS = [];
+    const totalRows = ws.rowCount;
+    let processedCount = 0;
+    ws.eachRow({includeEmpty:false}, (row, rowNumber)=>{
+      if(rowNumber === 1) return;
+      const customer = row.getCell(colMap.customer).value;
+      const address = colMap.address ? row.getCell(colMap.address).value : '';
+      const relation = row.getCell(colMap.relation).value;
+      const recipient = row.getCell(colMap.recipient).value;
+      const branch = colMap.branch ? row.getCell(colMap.branch).value : '';
+      const zip5 = colMap.zip5 ? row.getCell(colMap.zip5).value : '';
+      const flyer = colMap.flyer ? row.getCell(colMap.flyer).value : '';
+      RAW_ROWS.push({
+        rowNumber,
+        customer: customer ? String(customer).trim() : '',
+        address: address ? String(address).trim() : '',
+        relation: relation ? String(relation).trim() : '',
+        recipient: recipient ? String(recipient).trim() : '',
+        branch: branch ? String(branch).trim() : '',
+        zip5: zip5 ? String(zip5).trim() : '',
+        flyer: flyer ? String(flyer).trim() : ''
+      });
+      processedCount++;
+      if(processedCount % 20000 === 0){
+        updateProgress(30 + (processedCount/totalRows)*30, `تحميل الصفوف... (${processedCount.toLocaleString('ar-EG')})`);
+      }
+    });
+
+    updateProgress(65, 'تطبيق قواعد التحقق...');
+    await new Promise(r=>setTimeout(r, 30)); // للسماح بتحديث الواجهة
+    processAllRows();
+
+    $('fileInfo').textContent = `${file.name} — ${RAW_ROWS.length.toLocaleString('ar-EG')} صف`;
+    $('newFileBtn').classList.remove('hidden');
+    $('exportBtn').classList.remove('hidden');
+    $('progressWrap').classList.add('hidden');
+    $('resultsWrap').classList.remove('hidden');
+
+  }catch(err){
+    console.error(err);
+    $('progressWrap').classList.add('hidden');
+    $('uploadZone').classList.remove('hidden');
+    alert('حدث خطأ أثناء قراءة الملف: ' + err.message);
+  }finally{
+    // تصفير قيمة الحقل إجباريًا حتى لو المستخدم رفع نفس اسم الملف مرة تانية (نسخة محدثة بنفس الاسم)
+    // من غير التصفير، بعض المتصفحات ما بتطلقش حدث change تاني لو الملف بنفس الاسم/المسار
+    e.target.value = '';
+  }
+});
+
+function updateProgress(pct, label){
+  $('progressFill').style.width = Math.min(pct,100) + '%';
+  $('progressLabel').textContent = Math.round(pct) + '% — ' + label;
+}
+
+$('newFileBtn').addEventListener('click', ()=>{
+  location.reload();
+});
+
+/* ============================================================
+   5) تنفيذ القواعد + التكرار على كل البيانات
+============================================================ */
+function processAllRows(){
+  PROCESSED = [];
+  CATEGORY_STATS = {};
+  DUPLICATE_REPORT = [];      // تقرير التكرار المنفصل (للعلم) - لباقي الصفات فقط
+  DUPLICATE_STATS = {};       // إحصائيات التكرار حسب الصفة
+
+  // الصفات اللي بيتطبق عليها فحص الارتباط الاسمي (مستثناة تمامًا من فحص التكرار)
+  const NAME_MATCH_RELATIONS = new Set(['العميل نفسه','الابناء','الاب','الام','الاخ','الاخت']);
+
+  // مرحلة 1: تطبيق قواعد الاسم/الصفة (الثلاثي + الارتباط)
+  const recipientMap = new Map(); // اسم مستلم منمّط -> Set من عناوين مختلفة (لغير صفات الارتباط الاسمي)
+  const recipientRowsIdx = new Map(); // اسم مستلم منمط -> [indices]
+  const normAddr = (a)=> squashRaw(a); // تطبيع العنوان بنفس أسلوب تطبيع الأسماء
+
+  for(let i=0;i<RAW_ROWS.length;i++){
+    const r = RAW_ROWS[i];
+    const {violations, custTokens, recvTokens} = checkRow(r.customer, r.recipient, r.relation);
+    const normRecv = recvTokens.join(' ');
+    const normCust = custTokens.join(' ');
+
+    if(!CATEGORY_STATS[r.relation]) CATEGORY_STATS[r.relation] = {total:0, violCount:0, types:{}};
+    CATEGORY_STATS[r.relation].total++;
+
+    const eligibleForDup = !NAME_MATCH_RELATIONS.has(r.relation);
+    if(eligibleForDup && normRecv){
+      const addr = normAddr(r.address);
+      if(!recipientMap.has(normRecv)) recipientMap.set(normRecv, new Set());
+      recipientMap.get(normRecv).add(addr);
+      if(!recipientRowsIdx.has(normRecv)) recipientRowsIdx.set(normRecv, []);
+      recipientRowsIdx.get(normRecv).push(i);
+    }
+
+    // ربط التبعية الهرمية عبر FLYER (كود الموزع الفعلي - Branch_ID غالبًا فاضي في هذا الملف)
+    const hInfo = HIERARCHY_MAP[normCode(r.flyer)] || {};
+
+    PROCESSED.push({...r, violations, normRecv, normCust, isDuplicate:false, dupWith:[],
+      region: hInfo.region || '', office: hInfo.office || '', supervisor: hInfo.supervisor || ''});
+  }
+
+  // مرحلة 2: تقرير التكرار المنفصل (للعلم فقط) - لباقي الصفات، حسب العنوان مش اسم العميل
+  DUPLICATE_GROUPS = [];
+  for(const [normRecv, addrSet] of recipientMap.entries()){
+    if(addrSet.size > 1){
+      const idxs = recipientRowsIdx.get(normRecv);
+      for(const idx of idxs){
+        PROCESSED[idx].isDuplicate = true;
+        const others = idxs.filter(j=>j!==idx).slice(0,5).map(j=>({
+          customer: RAW_ROWS[j].customer, address: RAW_ROWS[j].address
+        }));
+        PROCESSED[idx].dupWith = others;
+        DUPLICATE_REPORT.push(idx);
+
+        if(!DUPLICATE_STATS[RAW_ROWS[idx].relation]) DUPLICATE_STATS[RAW_ROWS[idx].relation] = 0;
+        DUPLICATE_STATS[RAW_ROWS[idx].relation]++;
+      }
+
+      // تجميع بيانات كل عنوان مختلف لنفس اسم المستلم (للترتيب والتلوين في التصدير)
+      const addrInfoMap = new Map();
+      const relationsSet = new Set();
+      for(const idx of idxs){
+        const raw = RAW_ROWS[idx];
+        relationsSet.add(raw.relation);
+        const a = normAddr(raw.address);
+        if(!addrInfoMap.has(a)) addrInfoMap.set(a, {address: raw.address || 'بدون عنوان', zip5: raw.zip5, branch: raw.branch, count:0, rowIdxs:[]});
+        const entry = addrInfoMap.get(a);
+        entry.count++;
+        entry.rowIdxs.push(idx);
+      }
+      const addressList = [...addrInfoMap.values()].sort((a,b)=>b.count-a.count);
+      addressList.forEach((a,i)=>{ a.colorIndex = i % RED_SHADES.length; });
+
+      DUPLICATE_GROUPS.push({
+        recipientName: RAW_ROWS[idxs[0]].recipient,
+        relations: [...relationsSet],
+        totalCount: idxs.length,
+        distinctAddressCount: addressList.length,
+        addressList,
+        rowIdxs: idxs
+      });
+    }
+  }
+  DUPLICATE_GROUPS.sort((a,b)=> b.totalCount - a.totalCount);
+
+  // إحصائيات نهائية لكل صفة (المخالفات فقط - بدون التكرار، أصبح تقرير منفصل)
+  for(const p of PROCESSED){
+    const stat = CATEGORY_STATS[p.relation];
+    if(p.violations.length>0){
+      stat.violCount++;
+      for(const v of p.violations){
+        stat.types[v] = (stat.types[v]||0)+1;
+      }
+    }
+  }
+
+  renderSummary();
+  renderChart();
+  renderCategoryGrid();
+  populateTypeFilter();
+  applyFiltersAndRender();
+  renderDuplicateReport();
+}
+
+/* ============================================================
+   6) عرض الملخص العلوي
+============================================================ */
+function renderSummary(){
+  const total = PROCESSED.length;
+  const violRows = PROCESSED.filter(p=>p.violations.length>0).length;
+  const dupRows = DUPLICATE_REPORT.length;
+  const clean = total - violRows;
+
+  $('summaryRow').innerHTML = `
+    <div class="stat-card total"><div class="num">${total.toLocaleString('ar-EG')}</div><div class="lbl">إجمالي الصفوف</div></div>
+    <div class="stat-card viol"><div class="num">${violRows.toLocaleString('ar-EG')}</div><div class="lbl">صفوف بها مخالفات (ثلاثي/ارتباط)</div></div>
+    <div class="stat-card clean"><div class="num">${clean.toLocaleString('ar-EG')}</div><div class="lbl">صفوف سليمة</div></div>
+    <div class="stat-card dup"><div class="num">${dupRows.toLocaleString('ar-EG')}</div><div class="lbl">صفوف في تقرير التكرار (للعلم)</div></div>
+  `;
+}
+
+let chartInstance = null;
+function renderChart(){
+  const ctx = document.getElementById('catChart');
+  const cats = Object.keys(CATEGORY_STATS);
+  const totals = cats.map(c=>CATEGORY_STATS[c].total);
+  const violCounts = cats.map(c=>CATEGORY_STATS[c].violCount);
+
+  if(chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: cats,
+      datasets:[
+        {label:'الإجمالي', data: totals, backgroundColor:'rgba(91,141,239,0.35)', borderRadius:6},
+        {label:'المخالفات', data: violCounts, backgroundColor:'rgba(239,68,68,0.65)', borderRadius:6}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{labels:{color:'#eaf0ff'}}},
+      scales:{
+        x:{ticks:{color:'#93a0bf', font:{size:11}}, grid:{color:'#2b3652'}},
+        y:{ticks:{color:'#93a0bf'}, grid:{color:'#2b3652'}}
+      }
+    }
+  });
+}
+
+function renderCategoryGrid(){
+  const grid = $('catGrid');
+  grid.innerHTML = '';
+  const cats = Object.entries(CATEGORY_STATS).sort((a,b)=>b[1].total - a[1].total);
+  for(const [name, stat] of cats){
+    const pct = stat.total ? (stat.violCount/stat.total*100) : 0;
+    const div = document.createElement('div');
+    div.className = 'cat-card' + (FILTER_STATE.cat===name?' active':'');
+    div.innerHTML = `
+      <div class="pct">${pct.toFixed(1)}٪</div>
+      <div class="cat-name">${name || '(بدون صفة)'}</div>
+      <div class="row"><span>الإجمالي</span><b>${stat.total.toLocaleString('ar-EG')}</b></div>
+      <div class="row"><span>المخالفات</span><b style="color:var(--bad)">${stat.violCount.toLocaleString('ar-EG')}</b></div>
+      <div class="bar"><div class="bar-fill" style="width:${Math.min(pct,100)}%"></div></div>
+    `;
+    div.addEventListener('click', ()=>{
+      FILTER_STATE.cat = (FILTER_STATE.cat===name) ? null : name;
+      PAGE = 1;
+      renderCategoryGrid();
+      applyFiltersAndRender();
+    });
+    grid.appendChild(div);
+  }
+}
+
+function populateTypeFilter(){
+  const sel = $('typeFilter');
+  sel.innerHTML = '<option value="ALL">كل أنواع المخالفات</option>';
+  for(const key of Object.keys(VIOLATION_LABELS)){
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = VIOLATION_LABELS[key];
+    sel.appendChild(opt);
+  }
+}
+
+/* ============================================================
+   7) الفلاتر والجدول
+============================================================ */
+$('typeFilter').addEventListener('change', (e)=>{
+  FILTER_STATE.type = e.target.value; PAGE=1; applyFiltersAndRender();
+});
+$('regionFilter').addEventListener('change', (e)=>{
+  FILTER_STATE.region = e.target.value;
+  FILTER_STATE.office = 'ALL'; FILTER_STATE.supervisor = 'ALL';
+  populateOfficeFilter(FILTER_STATE.region);
+  populateSupervisorFilter('ALL');
+  PAGE=1; applyFiltersAndRender();
+});
+$('officeFilter').addEventListener('change', (e)=>{
+  FILTER_STATE.office = e.target.value;
+  FILTER_STATE.supervisor = 'ALL';
+  populateSupervisorFilter(FILTER_STATE.office);
+  PAGE=1; applyFiltersAndRender();
+});
+$('supervisorFilter').addEventListener('change', (e)=>{
+  FILTER_STATE.supervisor = e.target.value;
+  PAGE=1; applyFiltersAndRender();
+});
+$('searchInput').addEventListener('input', (e)=>{
+  FILTER_STATE.search = e.target.value.trim(); PAGE=1; applyFiltersAndRender();
+});
+$('scopeViolations').addEventListener('click', ()=>{
+  FILTER_STATE.scope='violations'; PAGE=1;
+  $('scopeViolations').classList.add('active'); $('scopeAll').classList.remove('active');
+  applyFiltersAndRender();
+});
+$('scopeAll').addEventListener('click', ()=>{
+  FILTER_STATE.scope='all'; PAGE=1;
+  $('scopeAll').classList.add('active'); $('scopeViolations').classList.remove('active');
+  applyFiltersAndRender();
+});
+$('clearCatBtn').addEventListener('click', ()=>{
+  FILTER_STATE.cat = null; PAGE=1; renderCategoryGrid(); applyFiltersAndRender();
+});
+// مكوّن ترقيم صفحات عام: يعرض أزرار أرقام (١ ٢ ٣ ... الأخيرة) بدل السابق/التالي بس
+function renderPageButtons(containerId, totalItems, pageSize, currentPage, onChange){
+  const el = $(containerId);
+  if(!el) return;
+  const maxPage = Math.max(1, Math.ceil(totalItems/pageSize));
+  el.innerHTML = '';
+  const mkBtn = (label, page, opts={})=>{
+    const b = document.createElement('button');
+    b.textContent = label;
+    if(opts.active) b.classList.add('active');
+    if(opts.disabled) b.disabled = true;
+    b.addEventListener('click', ()=>{ if(page>=1 && page<=maxPage) onChange(page); });
+    return b;
+  };
+  el.appendChild(mkBtn('«', 1, {disabled: currentPage===1}));
+  el.appendChild(mkBtn('‹', currentPage-1, {disabled: currentPage===1}));
+
+  const windowSize = 5;
+  let start = Math.max(1, currentPage - Math.floor(windowSize/2));
+  let end = Math.min(maxPage, start + windowSize - 1);
+  start = Math.max(1, end - windowSize + 1);
+
+  if(start > 1){
+    el.appendChild(mkBtn('1', 1));
+    if(start > 2){ const s = document.createElement('span'); s.className='ellipsis'; s.textContent='…'; el.appendChild(s); }
+  }
+  for(let p=start; p<=end; p++){
+    el.appendChild(mkBtn(String(p).replace(/[0-9]/g, d=>'٠١٢٣٤٥٦٧٨٩'[d]), p, {active:p===currentPage}));
+  }
+  if(end < maxPage){
+    if(end < maxPage-1){ const s = document.createElement('span'); s.className='ellipsis'; s.textContent='…'; el.appendChild(s); }
+    el.appendChild(mkBtn(String(maxPage).replace(/[0-9]/g, d=>'٠١٢٣٤٥٦٧٨٩'[d]), maxPage));
+  }
+  el.appendChild(mkBtn('›', currentPage+1, {disabled: currentPage===maxPage}));
+  el.appendChild(mkBtn('»', maxPage, {disabled: currentPage===maxPage}));
+}
+
+function applyFiltersAndRender(){
+  // نطاق مطابق للفلاتر الهرمية/الصفة/النوع/البحث بغض النظر عن نطاق العرض (مخالفات فقط / الكل)
+  // بيُستخدم لحساب نسبة المخالفات الفعلية عند تحديد منطقة/مكتب/مشرف معين
+  const matchingHierarchy = PROCESSED.filter(p=>{
+    if(FILTER_STATE.cat && p.relation !== FILTER_STATE.cat) return false;
+    if(FILTER_STATE.region!=='ALL' && p.region !== FILTER_STATE.region) return false;
+    if(FILTER_STATE.office!=='ALL' && p.office !== FILTER_STATE.office) return false;
+    if(FILTER_STATE.supervisor!=='ALL' && p.supervisor !== FILTER_STATE.supervisor) return false;
+    if(FILTER_STATE.type!=='ALL' && !p.violations.includes(FILTER_STATE.type)) return false;
+    if(FILTER_STATE.search){
+      const s = FILTER_STATE.search;
+      if(!p.customer.includes(s) && !p.recipient.includes(s)) return false;
+    }
+    return true;
+  });
+  const violInSelection = matchingHierarchy.filter(p=>p.violations.length>0).length;
+  const hsr = $('hierarchySummaryRow');
+  if(hsr){
+    const hasHierarchyFilter = FILTER_STATE.region!=='ALL' || FILTER_STATE.office!=='ALL' || FILTER_STATE.supervisor!=='ALL';
+    const hasAnyFilter = hasHierarchyFilter || FILTER_STATE.cat || FILTER_STATE.type!=='ALL' || FILTER_STATE.search;
+    if(hasAnyFilter){
+      const rate = matchingHierarchy.length ? (violInSelection/matchingHierarchy.length*100).toFixed(1) : '0.0';
+      hsr.innerHTML = `
+        <div class="stat-card total"><div class="num">${matchingHierarchy.length.toLocaleString('ar-EG')}</div><div class="lbl">صفوف الاختيار الحالي</div></div>
+        <div class="stat-card viol"><div class="num">${violInSelection.toLocaleString('ar-EG')}</div><div class="lbl">مخالفات ضمن الاختيار</div></div>
+        <div class="stat-card"><div class="num" style="color:var(--warn)">${rate}٪</div><div class="lbl">نسبة المخالفة للاختيار</div></div>
+      `;
+    } else {
+      hsr.innerHTML = '';
+    }
+  }
+
+  FILTERED_ROWS = FILTER_STATE.scope==='violations' ? matchingHierarchy.filter(p=>p.violations.length>0) : matchingHierarchy;
+  renderTable();
+}
+
+function renderTable(){
+  const start = (PAGE-1)*PAGE_SIZE;
+  const pageRows = FILTERED_ROWS.slice(start, start+PAGE_SIZE);
+  const tbody = $('tableBody');
+  tbody.innerHTML = '';
+
+  for(const p of pageRows){
+    const tr = document.createElement('tr');
+    const tagsHtml = p.violations.map(v=>`<span class="tag">${VIOLATION_LABELS[v]||v}</span>`).join('') || '<span class="muted">لا يوجد</span>';
+
+    tr.innerHTML = `
+      <td>${p.rowNumber}</td>
+      <td>${p.relation || '-'}</td>
+      <td>${p.customer}</td>
+      <td>${p.recipient}</td>
+      <td class="muted" style="font-size:11.5px; max-width:200px;">${p.address || '-'}</td>
+      <td class="muted">${p.zip5 || '-'}</td>
+      <td class="muted">${p.flyer || '-'}</td>
+      <td class="muted">${p.region || '-'}</td>
+      <td class="muted">${p.office || '-'}</td>
+      <td class="muted">${p.supervisor || '-'}</td>
+      <td>${tagsHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  const maxPage = Math.ceil(FILTERED_ROWS.length/PAGE_SIZE)||1;
+  $('pageInfo').textContent = `عرض ${FILTERED_ROWS.length.toLocaleString('ar-EG')} صف — صفحة ${PAGE} من ${maxPage}`;
+  renderPageButtons('pageNumbers', FILTERED_ROWS.length, PAGE_SIZE, PAGE, (p)=>{ PAGE=p; renderTable(); });
+}
+
+/* ============================================================
+   7ب) تقرير التكرار المنفصل (للعلم فقط - باقي الصفات)
+============================================================ */
+let DUP_PAGE = 1;
+const DUP_PAGE_SIZE = 100;
+let DUP_FILTERED = [];
+let DUP_VIEW = 'all'; // 'all' | 'top10'
+
+function renderDuplicateReport(){
+  const section = $('dupReportWrap');
+  if(!section) return;
+
+  if(DUPLICATE_REPORT.length === 0){
+    section.classList.add('hidden');
+    return;
+  }
+  section.classList.remove('hidden');
+
+  // ملخص حسب الصفة
+  const grid = $('dupCatGrid');
+  grid.innerHTML = '';
+  const cats = Object.entries(DUPLICATE_STATS).sort((a,b)=>b[1]-a[1]);
+  for(const [name, count] of cats){
+    const div = document.createElement('div');
+    div.className = 'cat-card';
+    div.innerHTML = `
+      <div class="cat-name">${name || '(بدون صفة)'}</div>
+      <div class="row"><span>صفوف مكررة العنوان</span><b style="color:var(--purple)">${count.toLocaleString('ar-EG')}</b></div>
+    `;
+    grid.appendChild(div);
+  }
+
+  DUP_PAGE = 1;
+  renderDuplicateTable();
+  renderDuplicateTop10();
+}
+
+$('dupViewAll').addEventListener('click', ()=>{
+  DUP_VIEW='all';
+  $('dupViewAll').classList.add('active'); $('dupViewTop10').classList.remove('active');
+  $('dupTop10Wrap').classList.add('hidden'); $('dupDetailWrap').classList.remove('hidden');
+});
+$('dupViewTop10').addEventListener('click', ()=>{
+  DUP_VIEW='top10';
+  $('dupViewTop10').classList.add('active'); $('dupViewAll').classList.remove('active');
+  $('dupTop10Wrap').classList.remove('hidden'); $('dupDetailWrap').classList.add('hidden');
+});
+
+// عرض أعلى 10 أسماء مستلمين حسب عدد التسليمات، مع تمييز كل عنوان بدرجة أحمر مختلفة
+function renderDuplicateTop10(){
+  const tbody = $('dupTop10Body');
+  tbody.innerHTML = '';
+  const top10 = DUPLICATE_GROUPS.slice(0,10);
+  top10.forEach((g, i)=>{
+    const addrBadges = g.addressList.map(a=>{
+      const color = '#' + RED_SHADES[a.colorIndex].slice(2);
+      return `<span class="tag" style="background:${color}22; border-color:${color}; color:${color};" title="عدد التسليمات لهذا العنوان: ${a.count}">${a.address} (${a.count.toLocaleString('ar-EG')})</span>`;
+    }).join(' ');
+    const zip5List = [...new Set(g.addressList.map(a=>a.zip5).filter(Boolean))].join(' / ') || '-';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${g.recipientName}</td>
+      <td><b style="color:var(--accent2)">${g.totalCount.toLocaleString('ar-EG')}</b></td>
+      <td><b style="color:var(--purple)">${g.distinctAddressCount.toLocaleString('ar-EG')}</b></td>
+      <td style="max-width:480px;">${addrBadges}</td>
+      <td class="muted">${zip5List}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderDuplicateTable(){
+  DUP_FILTERED = DUPLICATE_REPORT;
+  const start = (DUP_PAGE-1)*DUP_PAGE_SIZE;
+  const pageIdxs = DUP_FILTERED.slice(start, start+DUP_PAGE_SIZE);
+  const tbody = $('dupTableBody');
+  tbody.innerHTML = '';
+  for(const idx of pageIdxs){
+    const p = PROCESSED[idx];
+    const others = p.dupWith.map(d=>`${d.customer} (${d.address||'بدون عنوان'})`).join(' | ');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.rowNumber}</td>
+      <td>${p.relation || '-'}</td>
+      <td>${p.customer}</td>
+      <td>${p.recipient}</td>
+      <td class="muted" style="font-size:11.5px; max-width:200px;">${p.address || '-'}</td>
+      <td class="muted">${p.zip5 || '-'}</td>
+      <td class="muted">${p.flyer || '-'}</td>
+      <td class="muted">${p.region || '-'}</td>
+      <td class="muted">${p.office || '-'}</td>
+      <td class="muted">${p.supervisor || '-'}</td>
+      <td class="muted" style="font-size:11.5px; max-width:300px;">${others}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+  const maxPage = Math.ceil(DUP_FILTERED.length/DUP_PAGE_SIZE)||1;
+  $('dupPageInfo').textContent = `عرض ${DUP_FILTERED.length.toLocaleString('ar-EG')} صف — صفحة ${DUP_PAGE} من ${maxPage}`;
+  renderPageButtons('dupPageNumbers', DUP_FILTERED.length, DUP_PAGE_SIZE, DUP_PAGE, (p)=>{ DUP_PAGE=p; renderDuplicateTable(); });
+}
+
+/* ============================================================
+   8) تصدير Excel
+============================================================ */
+$('exportBtn').addEventListener('click', async ()=>{
+  $('exportBtn').disabled = true;
+  $('exportBtn').textContent = '⏳ جاري التصدير...';
+  try{
+    await exportViolations();
+    showToast('تم تصدير الملف بنجاح ✅');
+  }catch(err){
+    console.error(err);
+    alert('حدث خطأ أثناء التصدير: '+err.message);
+  }finally{
+    $('exportBtn').disabled = false;
+    $('exportBtn').textContent = '⬇️ تصدير المخالفات Excel';
+  }
+});
+
+/* ============================================================
+   دوال مساعدة لتنسيق ملفات الإكسيل المصدّرة (ألوان + تنسيقات بيانية):
+   تلوين خلايا النسبة % حسب حدة النسبة (أحمر/أصفر/أخضر)، حدود لكل خلية،
+   تظليل صفوف متبادل (زيبرا)، تجميد صف العناوين، وشريط بيانات Data Bar
+   حي داخل عمود النسبة نفسه.
+============================================================ */
+function excelPctColorARGB(pct){
+  if(pct>=50) return 'FFFCA5A5'; // أحمر فاتح
+  if(pct>=20) return 'FFFDE68A'; // أصفر فاتح
+  return 'FFBBF7D0'; // أخضر فاتح
+}
+
+function styleExcelSheet(ws, {pctCol=null, lastCol, firstDataRow=2}={}){
+  const lastRow = ws.rowCount;
+  ws.views = [{rightToLeft:true, state:'frozen', ySplit:1}];
+  const thin = {style:'thin', color:{argb:'FF2B3652'}};
+  for(let r=firstDataRow; r<=lastRow; r++){
+    const row = ws.getRow(r);
+    const isEven = (r % 2 === 0);
+    for(let c=1; c<=lastCol; c++){
+      const cell = row.getCell(c);
+      cell.border = {top:thin, left:thin, bottom:thin, right:thin};
+      if(isEven && !cell.fill){
+        cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF3F4F6'}};
+      }
+    }
+    if(pctCol){
+      const pctCell = row.getCell(pctCol);
+      const pctVal = Number(pctCell.value)||0;
+      pctCell.fill = {type:'pattern', pattern:'solid', fgColor:{argb: excelPctColorARGB(pctVal)}};
+      pctCell.font = {bold:true, color:{argb:'FF1F2937'}};
+      pctCell.numFmt = '0.0"%"';
+    }
+  }
+  if(pctCol && lastRow>=firstDataRow){
+    const colLetter = ws.getColumn(pctCol).letter;
+    ws.addConditionalFormatting({
+      ref: `${colLetter}${firstDataRow}:${colLetter}${lastRow}`,
+      rules: [{
+        type:'dataBar', cfvo:[{type:'min'},{type:'max'}],
+        color:{argb:'FF5B8DEF'}, showValue:true,
+      }]
+    });
+  }
+}
+
+async function exportViolations(){
+  const wb = new ExcelJS.Workbook();
+
+  // ورقة المخالفات التفصيلية (ثلاثي/ارتباط فقط - بدون تكرار)
+  const ws = wb.addWorksheet('المخالفات', {views:[{rightToLeft:true}]});
+  ws.columns = [
+    {header:'رقم الصف', key:'row', width:10},
+    {header:'صفة المستلم', key:'relation', width:16},
+    {header:'اسم العميل', key:'customer', width:28},
+    {header:'اسم المستلم', key:'recipient', width:28},
+    {header:'عنوان العميل', key:'address', width:35},
+    {header:'zip5', key:'zip5', width:12},
+    {header:'كود الموزع (FLYER)', key:'flyer', width:18},
+    {header:'المنطقة', key:'region', width:16},
+    {header:'المكتب', key:'office', width:16},
+    {header:'المشرف', key:'supervisor', width:18},
+    {header:'أنواع المخالفة', key:'types', width:40},
+  ];
+  ws.getRow(1).font = {bold:true, color:{argb:'FFFFFFFF'}};
+  ws.getRow(1).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF1F2937'}};
+
+  const violRows = PROCESSED.filter(p=>p.violations.length>0);
+  for(const p of violRows){
+    const row = ws.addRow({
+      row: p.rowNumber,
+      relation: p.relation,
+      customer: p.customer,
+      recipient: p.recipient,
+      address: p.address,
+      zip5: p.zip5,
+      flyer: p.flyer,
+      region: p.region,
+      office: p.office,
+      supervisor: p.supervisor,
+      types: p.violations.map(v=>VIOLATION_LABELS[v]||v).join(' | ')
+    });
+    row.getCell('types').font = {color:{argb:'FFDC2626'}};
+  }
+  ws.autoFilter = {from:'A1', to:'K1'};
+  styleExcelSheet(ws, {lastCol:11});
+
+  // ورقة تقرير التكرار المنفصلة (للعلم فقط - ليست مخالفة)
+  const ws3 = wb.addWorksheet('تقرير التكرار (للعلم)', {views:[{rightToLeft:true}]});
+  ws3.columns = [
+    {header:'رقم الصف', key:'row', width:10},
+    {header:'صفة المستلم', key:'relation', width:16},
+    {header:'اسم العميل', key:'customer', width:28},
+    {header:'اسم المستلم', key:'recipient', width:28},
+    {header:'عنوان العميل', key:'address', width:35},
+    {header:'zip5', key:'zip5', width:12},
+    {header:'كود الموزع (FLYER)', key:'flyer', width:18},
+    {header:'المنطقة', key:'region', width:16},
+    {header:'المكتب', key:'office', width:16},
+    {header:'المشرف', key:'supervisor', width:18},
+    {header:'عناوين/عملاء آخرون بنفس اسم المستلم', key:'dup', width:60},
+  ];
+  ws3.getRow(1).font = {bold:true, color:{argb:'FFFFFFFF'}};
+  ws3.getRow(1).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF6D28D9'}};
+  for(const idx of DUPLICATE_REPORT){
+    const p = PROCESSED[idx];
+    ws3.addRow({
+      row: p.rowNumber,
+      relation: p.relation,
+      customer: p.customer,
+      recipient: p.recipient,
+      address: p.address,
+      zip5: p.zip5,
+      flyer: p.flyer,
+      region: p.region,
+      office: p.office,
+      supervisor: p.supervisor,
+      dup: p.dupWith.map(d=>`${d.customer} (${d.address||'بدون عنوان'})`).join(' | ')
+    });
+  }
+  ws3.autoFilter = {from:'A1', to:'K1'};
+  styleExcelSheet(ws3, {lastCol:11});
+
+  // ورقة تجميع التكرار حسب اسم المستلم: مرتبة بعدد التسليمات الأكثر، وكل عنوان
+  // مختلف لنفس المستلم له درجة لون أحمر مختلفة تميزه عن باقي عناوينه
+  const ws4 = wb.addWorksheet('تكرار مجمّع حسب المستلم', {views:[{rightToLeft:true}]});
+  ws4.columns = [
+    {header:'ترتيب', key:'rank', width:8},
+    {header:'اسم المستلم', key:'recipient', width:28},
+    {header:'الصفة/الصفات', key:'relations', width:22},
+    {header:'إجمالي التسليمات', key:'total', width:16},
+    {header:'عدد العناوين المختلفة', key:'addrCount', width:18},
+    {header:'العنوان', key:'address', width:35},
+    {header:'عدد التسليمات لهذا العنوان', key:'addrCnt', width:20},
+    {header:'zip5', key:'zip5', width:12},
+    {header:'كود الموزع', key:'branch', width:14},
+  ];
+  ws4.getRow(1).font = {bold:true, color:{argb:'FFFFFFFF'}};
+  ws4.getRow(1).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF1F2937'}};
+
+  DUPLICATE_GROUPS.forEach((g, gi)=>{
+    g.addressList.forEach((a, ai)=>{
+      const row = ws4.addRow({
+        rank: ai===0 ? gi+1 : '',
+        recipient: ai===0 ? g.recipientName : '',
+        relations: ai===0 ? g.relations.join(' / ') : '',
+        total: ai===0 ? g.totalCount : '',
+        addrCount: ai===0 ? g.distinctAddressCount : '',
+        address: a.address,
+        addrCnt: a.count,
+        zip5: a.zip5,
+        branch: a.branch,
+      });
+      // كل عنوان مختلف لنفس المستلم يتلوّن بدرجة أحمر مختلفة (يميزه عن باقي عناوينه)
+      const argb = RED_SHADES[a.colorIndex];
+      row.getCell('address').fill = {type:'pattern', pattern:'solid', fgColor:{argb}};
+      row.getCell('addrCnt').fill = {type:'pattern', pattern:'solid', fgColor:{argb}};
+    });
+    // خط فاصل خفيف بين مجموعة وأخرى
+    const sepRow = ws4.addRow({});
+    sepRow.height = 4;
+  });
+  ws4.autoFilter = {from:'A1', to:'I1'};
+  styleExcelSheet(ws4, {lastCol:9});
+
+  // ورقة الملخص حسب الصفة
+  const ws2 = wb.addWorksheet('ملخص حسب الصفة', {views:[{rightToLeft:true}]});
+  ws2.columns = [
+    {header:'صفة المستلم', key:'relation', width:20},
+    {header:'إجمالي الصفوف', key:'total', width:16},
+    {header:'عدد المخالفات', key:'viol', width:16},
+    {header:'نسبة المخالفة %', key:'pct', width:16},
+  ];
+  ws2.getRow(1).font = {bold:true, color:{argb:'FFFFFFFF'}};
+  ws2.getRow(1).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF1F2937'}};
+  for(const [name, stat] of Object.entries(CATEGORY_STATS)){
+    ws2.addRow({
+      relation: name || '(بدون صفة)',
+      total: stat.total,
+      viol: stat.violCount,
+      pct: stat.total ? +(stat.violCount/stat.total*100).toFixed(1) : 0
+    });
+  }
+  ws2.autoFilter = {from:'A1', to:'D1'};
+  styleExcelSheet(ws2, {pctCol:4, lastCol:4});
+
+  // ورقة ملخص حسب التبعية الهرمية (المنطقة > المكتب > المشرف) - إجمالي/مخالفات/نسبة
+  const ws5 = wb.addWorksheet('ملخص حسب التبعية الهرمية', {views:[{rightToLeft:true}]});
+  ws5.columns = [
+    {header:'المنطقة', key:'region', width:16},
+    {header:'المكتب', key:'office', width:16},
+    {header:'المشرف', key:'supervisor', width:18},
+    {header:'إجمالي الصفوف', key:'total', width:14},
+    {header:'عدد المخالفات', key:'viol', width:14},
+    {header:'نسبة المخالفة %', key:'pct', width:16},
+  ];
+  ws5.getRow(1).font = {bold:true, color:{argb:'FFFFFFFF'}};
+  ws5.getRow(1).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF1F2937'}};
+
+  if(Object.keys(HIERARCHY_MAP).length === 0){
+    ws5.addRow({region:'لم يتم رفع ملف تبعية هرمية بعد - من قائمة إعدادات التبعية الهرمية في أعلى الصفحة', office:'', supervisor:'', total:'', viol:'', pct:''});
+  } else {
+    const hKey = (p)=> `${p.region||'(بدون منطقة)'}|${p.office||'(بدون مكتب)'}|${p.supervisor||'(بدون مشرف)'}`;
+    const hStats = new Map();
+    for(const p of PROCESSED){
+      const k = hKey(p);
+      if(!hStats.has(k)) hStats.set(k, {region:p.region||'(بدون منطقة)', office:p.office||'(بدون مكتب)', supervisor:p.supervisor||'(بدون مشرف)', total:0, viol:0});
+      const s = hStats.get(k);
+      s.total++;
+      if(p.violations.length>0) s.viol++;
+    }
+    const hRows = [...hStats.values()].sort((a,b)=> (b.viol/b.total) - (a.viol/a.total));
+    for(const s of hRows){
+      ws5.addRow({
+        region: s.region, office: s.office, supervisor: s.supervisor,
+        total: s.total, viol: s.viol,
+        pct: s.total ? +(s.viol/s.total*100).toFixed(1) : 0
+      });
+    }
+  }
+  ws5.autoFilter = {from:'A1', to:'F1'};
+  styleExcelSheet(ws5, {pctCol:6, lastCol:6});
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'مخالفات_اسم_وصفة_التسليم_والتكرار.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   👁 تسليمات داخل/خارج العين — منقول من الداش بورد الرئيسي بنفس
+   الشروط والآليات: عمود كود الموزع + عمود لكل صفة تسليم، تصنيف كل
+   عمود تلقائيًا حسب اسمه لواحدة من 3 فئات (داخل العين / الاقارب /
+   خارج العين)، رفعة لازم لها اسم إصدار، وكل رفعة جديدة لنفس الكود
+   ونفس الإصدار بتستبدل بيانات هذا الكود القديمة فى هذا الإصدار بس.
+   المكتب/المشرف/المنطقة بيتحددوا من نفس ملف التبعية الهرمية
+   (HIERARCHY_MAP) المستخدم فى تقرير المخالفات بنفس هذا الداش بورد.
+============================================================ */
+const OUTEYE_STORAGE_KEY = 'outeye_rows_v1';
+let ALL_OUTEYE_ROWS = [];
+let OUTEYE_PAGE = 1;
+const OUTEYE_PAGE_SIZE = 100;
+let OUTEYE_FILTER_STATE = {version:'ALL', region:'ALL', office:'ALL', supervisor:'ALL', search:''};
+let OUTEYE_TOPN = 10; // 10 أو 'ALL' - يتحكم فى عدد الصفوف الظاهرة بكل تقرير تفصيلي (منطقة/مكتب/مشرف/موزع)
+let outEyeOverviewChartInstance = null;
+let outEyeRegionChartInstance = null;
+let outEyeOfficeChartInstance = null;
+let outEyeSupervisorChartInstance = null;
+let outEyeDistributorChartInstance = null;
+let outEyeUploadExpanded = false; // يتحكم فى إظهار شاشة الرفع الكبيرة يدويًا حتى لو فيه بيانات محمّلة بالفعل
+
+function loadOutEyeRows(){
+  try{
+    const raw = localStorage.getItem(OUTEYE_STORAGE_KEY);
+    ALL_OUTEYE_ROWS = raw ? JSON.parse(raw) : [];
+  }catch(e){ ALL_OUTEYE_ROWS = []; }
+}
+function saveOutEyeRows(){
+  try{ localStorage.setItem(OUTEYE_STORAGE_KEY, JSON.stringify(ALL_OUTEYE_ROWS)); }catch(e){}
+}
+
+const OUT_INSIDE_REASONS = ['العميل نفسه','الاب','الابناء','الاخت','الاخ','الام','الزوج','الزوجة','الخدم'].map(squashRaw);
+function classifyOutEyeReason(name){
+  const n = squashRaw(name);
+  if(!n) return 'outside';
+  if(n.includes(squashRaw('اقارب'))) return 'relatives';
+  if(OUT_INSIDE_REASONS.some(k=> n===k || n.includes(k) || k.includes(n))) return 'inside';
+  return 'outside';
+}
+
+async function parseOutEyeFile(file, version){
+  const buffer = await file.arrayBuffer();
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(buffer);
+  const ws = wb.worksheets[0];
+  const headerRow = ws.getRow(1).values; // index 0 غير مستخدم فى ExcelJS
+  let codeCol = -1;
+  const reasonCols = []; // {col, name, bucket}
+  headerRow.forEach((val, idx)=>{
+    if(!val || idx===0) return;
+    const h = String(typeof val==='object' ? (val.text||val.result||'') : val).trim();
+    if(!h) return;
+    if(codeCol===-1 && (h.includes('كود الموزع') || h.includes('كود') || h.toLowerCase().includes('flyer'))){
+      codeCol = idx;
+    } else {
+      reasonCols.push({col:idx, name:h, bucket: classifyOutEyeReason(h)});
+    }
+  });
+  if(codeCol===-1) throw new Error('لم يتم العثور على عمود "كود الموزع" فى الملف.');
+  if(reasonCols.length===0) throw new Error('لم يتم العثور على أي أعمدة صفات تسليم فى الملف.');
+
+  const rows = [];
+  ws.eachRow({includeEmpty:false}, (row, rowNumber)=>{
+    if(rowNumber===1) return;
+    const code = normCode(row.getCell(codeCol).value);
+    if(!code) return;
+    const reasons = {};
+    let insideTotal=0, relativesTotal=0, outsideTotal=0;
+    for(const rc of reasonCols){
+      const raw = row.getCell(rc.col).value;
+      let v = raw;
+      if(v && typeof v==='object') v = v.result!=null ? v.result : (v.text!=null ? v.text : 0);
+      v = Number(v)||0;
+      if(v===0) continue;
+      reasons[rc.name] = (reasons[rc.name]||0) + v;
+      if(rc.bucket==='inside') insideTotal+=v;
+      else if(rc.bucket==='relatives') relativesTotal+=v;
+      else outsideTotal+=v;
+    }
+    rows.push({
+      code, version,
+      reasons, insideTotal, relativesTotal, outsideTotal,
+      total: insideTotal+relativesTotal+outsideTotal
+    });
+  });
+  return rows;
+}
+
+// دمج الصفوف الجديدة: كل رفعة جديدة لنفس الكود ونفس الإصدار بتستبدل بيانات
+// هذا الكود القديمة فى هذا الإصدار بس (باقي الإصدارات بتفضل زي ما هى)
+function mergeOutEyeRows(newRows){
+  if(!newRows.length) return;
+  const version = newRows[0].version;
+  ALL_OUTEYE_ROWS = ALL_OUTEYE_ROWS.filter(r=> r.version!==version);
+  ALL_OUTEYE_ROWS = ALL_OUTEYE_ROWS.concat(newRows);
+}
+
+function distinctOutEyeVersions(){
+  return [...new Set(ALL_OUTEYE_ROWS.map(r=>r.version).filter(Boolean))].sort();
+}
+
+function outEyeRowHierarchy(row){
+  const h = HIERARCHY_MAP[normCode(row.code)] || {};
+  return {region: h.region||'', office: h.office||'', supervisor: h.supervisor||''};
+}
+
+function renderOutEyeVersionChips(){
+  const versions = distinctOutEyeVersions();
+  $('outEyeVersionCount').textContent = versions.length.toLocaleString('ar-EG');
+  const wrap = $('outEyeVersionChipsWrap');
+  const noVersionsEl = $('outEyeNoVersions');
+  wrap.querySelectorAll('.outeye-ver-chip').forEach(c=>c.remove());
+  if(versions.length===0){
+    noVersionsEl.classList.remove('hidden');
+  } else {
+    noVersionsEl.classList.add('hidden');
+    versions.forEach(v=>{
+      const chip = document.createElement('span');
+      chip.className = 'chip outeye-ver-chip';
+      chip.innerHTML = v.replace(/</g,'&lt;') + ' <span style="opacity:.6;">✖</span>';
+      chip.title = 'اضغط لحذف بيانات هذا الإصدار';
+      chip.addEventListener('click', ()=>{
+        if(!confirm('حذف كل بيانات إصدار "'+v+'" من تقرير خارج العين؟')) return;
+        ALL_OUTEYE_ROWS = ALL_OUTEYE_ROWS.filter(r=>r.version!==v);
+        saveOutEyeRows();
+        renderOutEyeVersionChips();
+        populateOutEyeFilters();
+        renderOutEyeAll();
+      });
+      wrap.appendChild(chip);
+    });
+  }
+}
+
+function fillOutEyeSelect(selectEl, values, allLabel){
+  const current = selectEl.value;
+  selectEl.innerHTML = `<option value="ALL">${allLabel}</option>` + values.map(v=>`<option value="${v}">${v}</option>`).join('');
+  selectEl.value = values.includes(current) ? current : 'ALL';
+}
+
+function populateOutEyeFilters(){
+  fillOutEyeSelect($('outEyeVersionFilter'), distinctOutEyeVersions(), 'كل الإصدارات');
+  fillOutEyeSelect($('outEyeRegionFilter'), HIERARCHY_INDEX.regions, 'كل المناطق');
+  fillOutEyeSelect($('outEyeOfficeFilter'), HIERARCHY_INDEX.allOffices, 'كل المكاتب');
+  fillOutEyeSelect($('outEyeSupervisorFilter'), HIERARCHY_INDEX.allSupervisors, 'كل المشرفين');
+}
+
+function outEyeFilteredRows(){
+  const st = OUTEYE_FILTER_STATE;
+  return ALL_OUTEYE_ROWS.filter(r=>{
+    if(st.version!=='ALL' && r.version!==st.version) return false;
+    const h = outEyeRowHierarchy(r);
+    if(st.region!=='ALL' && h.region!==st.region) return false;
+    if(st.office!=='ALL' && h.office!==st.office) return false;
+    if(st.supervisor!=='ALL' && h.supervisor!==st.supervisor) return false;
+    if(st.search && !r.code.toUpperCase().includes(st.search.toUpperCase())) return false;
+    return true;
+  });
+}
+
+function fmtOutEyePct(part, total){ return total ? ((part/total)*100).toFixed(1)+'%' : '—'; }
+
+function renderOutEyeSummary(rows){
+  const totalCodes = new Set(rows.map(r=>r.code)).size;
+  const inside = rows.reduce((s,r)=>s+r.insideTotal,0);
+  const relatives = rows.reduce((s,r)=>s+r.relativesTotal,0);
+  const outside = rows.reduce((s,r)=>s+r.outsideTotal,0);
+  const total = inside+relatives+outside;
+  $('outEyeSummaryRow').innerHTML = `
+    <div class="stat-card codes"><div class="num">${totalCodes.toLocaleString('ar-EG')}</div><div class="lbl">عدد الأكواد (الموزعين)</div></div>
+    <div class="stat-card inside"><div class="num">${inside.toLocaleString('ar-EG')}</div><div class="lbl">داخل العين (${fmtOutEyePct(inside,total)})</div></div>
+    <div class="stat-card relatives"><div class="num">${relatives.toLocaleString('ar-EG')}</div><div class="lbl">الاقارب (${fmtOutEyePct(relatives,total)})</div></div>
+    <div class="stat-card outside"><div class="num">${outside.toLocaleString('ar-EG')}</div><div class="lbl">خارج العين (${fmtOutEyePct(outside,total)})</div></div>
+  `;
+}
+
+function renderOutEyeOverviewChart(rows){
+  const inside = rows.reduce((s,r)=>s+r.insideTotal,0);
+  const relatives = rows.reduce((s,r)=>s+r.relativesTotal,0);
+  const outside = rows.reduce((s,r)=>s+r.outsideTotal,0);
+  const ctx = document.getElementById('outEyeOverviewChart');
+  if(outEyeOverviewChartInstance) outEyeOverviewChartInstance.destroy();
+  outEyeOverviewChartInstance = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels:['داخل العين','الاقارب','خارج العين'],
+      datasets:[{
+        data:[inside, relatives, outside],
+        backgroundColor:['rgba(34,197,94,0.75)','rgba(245,158,11,0.75)','rgba(244,63,94,0.75)'],
+        borderColor:'#1b2436', borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom', labels:{color:'#eaf0ff', font:{size:12.5}}}},
+      cutout:'62%'
+    }
+  });
+}
+
+function outEyeAggregateBy(rows, keyFn){
+  const map = new Map();
+  for(const r of rows){
+    const key = keyFn(r) || '(غير محدد)';
+    if(!map.has(key)) map.set(key, {key, inside:0, relatives:0, outside:0, total:0, codes:new Set()});
+    const a = map.get(key);
+    a.inside += r.insideTotal; a.relatives += r.relativesTotal; a.outside += r.outsideTotal;
+    a.total += r.total; a.codes.add(r.code);
+  }
+  const list = [...map.values()];
+  // الترتيب الأساسي: الأعلى نسبة تسليمات خارج العين (مش الأعلى عدد تسليمات إجمالي)
+  for(const a of list) a.outsidePct = a.total ? (a.outside/a.total*100) : -1;
+  return list.sort((a,b)=> b.outsidePct - a.outsidePct);
+}
+
+function outEyePctClass(pct){
+  if(pct>=50) return 'bad';
+  if(pct>=20) return 'mid';
+  return 'good';
+}
+
+// يرسم قسم تقرير واحد (مخطط بياني + بطاقات مربعات ونسب) لمستوى هرمي معيّن (منطقة/مكتب/مشرف/موزع)
+function renderOutEyeStackSection(opts){
+  const {data, gridId, countId, chartCanvasId, getChartInstance, setChartInstance, onCardClick, activeKey} = opts;
+  const limited = OUTEYE_TOPN==='ALL' ? data : data.slice(0, OUTEYE_TOPN);
+  $(countId).textContent = data.length.toLocaleString('ar-EG') + (OUTEYE_TOPN==='ALL' ? '' : ' (المعروض: '+limited.length.toLocaleString('ar-EG')+')');
+
+  // مخطط بياني (مجمّع: داخل العين / الاقارب / خارج العين لكل عنصر)
+  const ctx = document.getElementById(chartCanvasId);
+  const prev = getChartInstance();
+  if(prev) prev.destroy();
+  const chart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: limited.map(a=>a.key),
+      datasets:[
+        {label:'داخل العين', data: limited.map(a=>a.inside), backgroundColor:'rgba(34,197,94,0.75)', borderRadius:5, stack:'s'},
+        {label:'الاقارب', data: limited.map(a=>a.relatives), backgroundColor:'rgba(245,158,11,0.75)', borderRadius:5, stack:'s'},
+        {label:'خارج العين', data: limited.map(a=>a.outside), backgroundColor:'rgba(244,63,94,0.75)', borderRadius:5, stack:'s'},
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#eaf0ff', font:{size:11.5}}}},
+      scales:{
+        x:{stacked:true, ticks:{color:'#93a0bf', font:{size:10.5}}, grid:{color:'#2b3652'}},
+        y:{stacked:true, ticks:{color:'#93a0bf'}, grid:{color:'#2b3652'}}
+      }
+    }
+  });
+  setChartInstance(chart);
+
+  // بطاقات مربعات ونسب (بنفس شكل تقرير المخالفات)
+  const grid = $(gridId);
+  grid.innerHTML = '';
+  for(const a of limited){
+    const pct = a.total ? (a.outside/a.total*100) : 0;
+    const div = document.createElement('div');
+    div.className = 'cat-card' + (activeKey===a.key ? ' active' : '');
+    div.innerHTML = `
+      <div class="pct ${outEyePctClass(pct)}">${pct.toFixed(1)}٪ خارج العين</div>
+      <div class="cat-name">${a.key}</div>
+      <div class="row"><span>عدد الأكواد</span><b>${a.codes.size.toLocaleString('ar-EG')}</b></div>
+      <div class="row"><span>الإجمالي</span><b>${a.total.toLocaleString('ar-EG')}</b></div>
+      <div class="row"><span>داخل العين</span><b style="color:var(--ok)">${a.inside.toLocaleString('ar-EG')}</b></div>
+      <div class="row"><span>الاقارب</span><b style="color:var(--warn)">${a.relatives.toLocaleString('ar-EG')}</b></div>
+      <div class="row"><span>خارج العين</span><b style="color:var(--bad2)">${a.outside.toLocaleString('ar-EG')}</b></div>
+      <div class="bar"><div class="bar-fill" style="width:${Math.min(pct,100)}%"></div></div>
+    `;
+    if(onCardClick) div.addEventListener('click', ()=>onCardClick(a.key));
+    grid.appendChild(div);
+  }
+  if(limited.length===0){
+    grid.innerHTML = '<div class="sub">لا توجد بيانات ضمن النطاق المحدد</div>';
+  }
+}
+
+function renderOutEyeBreakdown(rows){
+  const byRegion = outEyeAggregateBy(rows, r=>outEyeRowHierarchy(r).region);
+  const byOffice = outEyeAggregateBy(rows, r=>outEyeRowHierarchy(r).office);
+  const bySupervisor = outEyeAggregateBy(rows, r=>outEyeRowHierarchy(r).supervisor);
+  const byDistributor = outEyeAggregateBy(rows, r=>r.code);
+
+  renderOutEyeStackSection({
+    data:byRegion, gridId:'outEyeRegionGrid', countId:'outEyeRegionCount', chartCanvasId:'outEyeRegionChart',
+    getChartInstance:()=>outEyeRegionChartInstance, setChartInstance:(c)=>outEyeRegionChartInstance=c,
+    activeKey: OUTEYE_FILTER_STATE.region!=='ALL' ? OUTEYE_FILTER_STATE.region : null,
+    onCardClick:(key)=>{
+      OUTEYE_FILTER_STATE.region = (OUTEYE_FILTER_STATE.region===key) ? 'ALL' : key;
+      $('outEyeRegionFilter').value = OUTEYE_FILTER_STATE.region;
+      renderOutEyeAll();
+    }
+  });
+  renderOutEyeStackSection({
+    data:byOffice, gridId:'outEyeOfficeGrid', countId:'outEyeOfficeCount', chartCanvasId:'outEyeOfficeChart',
+    getChartInstance:()=>outEyeOfficeChartInstance, setChartInstance:(c)=>outEyeOfficeChartInstance=c,
+    activeKey: OUTEYE_FILTER_STATE.office!=='ALL' ? OUTEYE_FILTER_STATE.office : null,
+    onCardClick:(key)=>{
+      OUTEYE_FILTER_STATE.office = (OUTEYE_FILTER_STATE.office===key) ? 'ALL' : key;
+      $('outEyeOfficeFilter').value = OUTEYE_FILTER_STATE.office;
+      renderOutEyeAll();
+    }
+  });
+  renderOutEyeStackSection({
+    data:bySupervisor, gridId:'outEyeSupervisorGrid', countId:'outEyeSupervisorCount', chartCanvasId:'outEyeSupervisorChart',
+    getChartInstance:()=>outEyeSupervisorChartInstance, setChartInstance:(c)=>outEyeSupervisorChartInstance=c,
+    activeKey: OUTEYE_FILTER_STATE.supervisor!=='ALL' ? OUTEYE_FILTER_STATE.supervisor : null,
+    onCardClick:(key)=>{
+      OUTEYE_FILTER_STATE.supervisor = (OUTEYE_FILTER_STATE.supervisor===key) ? 'ALL' : key;
+      $('outEyeSupervisorFilter').value = OUTEYE_FILTER_STATE.supervisor;
+      renderOutEyeAll();
+    }
+  });
+  renderOutEyeStackSection({
+    data:byDistributor, gridId:'outEyeDistributorGrid', countId:'outEyeDistributorCount', chartCanvasId:'outEyeDistributorChart',
+    getChartInstance:()=>outEyeDistributorChartInstance, setChartInstance:(c)=>outEyeDistributorChartInstance=c,
+    activeKey: OUTEYE_FILTER_STATE.search ? OUTEYE_FILTER_STATE.search.toUpperCase() : null,
+    onCardClick:(key)=>{
+      const same = OUTEYE_FILTER_STATE.search && OUTEYE_FILTER_STATE.search.toUpperCase()===String(key).toUpperCase();
+      OUTEYE_FILTER_STATE.search = same ? '' : key;
+      $('outEyeSearchInput').value = OUTEYE_FILTER_STATE.search;
+      renderOutEyeAll();
+    }
+  });
+}
+
+function renderOutEyeTable(rows){
+  const start = (OUTEYE_PAGE-1)*OUTEYE_PAGE_SIZE;
+  const pageRows = rows.slice(start, start+OUTEYE_PAGE_SIZE);
+  $('outEyeTableBody').innerHTML = pageRows.map((r,i)=>{
+    const h = outEyeRowHierarchy(r);
+    const detail = Object.entries(r.reasons).map(([name,v])=>`${name}: ${v}`).join('، ') || '—';
+    return `<tr>
+      <td>${start+i+1}</td>
+      <td>${r.code}</td>
+      <td>${r.version}</td>
+      <td>${h.region||'—'}</td>
+      <td>${h.office||'—'}</td>
+      <td>${h.supervisor||'—'}</td>
+      <td>${r.insideTotal}</td>
+      <td>${r.relativesTotal}</td>
+      <td>${r.outsideTotal}</td>
+      <td><b>${r.total}</b></td>
+      <td class="muted" style="max-width:280px;">${detail}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="11" style="text-align:center;" class="muted">لا توجد بيانات ضمن النطاق المحدد</td></tr>`;
+  const maxPage = Math.max(1, Math.ceil(rows.length/OUTEYE_PAGE_SIZE));
+  $('outEyePageInfo').textContent = rows.length
+    ? `عرض ${start+1}–${Math.min(start+OUTEYE_PAGE_SIZE, rows.length)} من ${rows.length.toLocaleString('ar-EG')}`
+    : '-';
+  renderPageButtons('outEyePageNumbers', rows.length, OUTEYE_PAGE_SIZE, OUTEYE_PAGE, (p)=>{ OUTEYE_PAGE=p; renderOutEyeTable(rows); });
+}
+
+function renderOutEyeAll(){
+  const hasData = ALL_OUTEYE_ROWS.length>0;
+  $('outEyeResultsWrap').classList.toggle('hidden', !hasData);
+  renderOutEyeUploadCollapse();
+  if(!hasData) return;
+  const rows = outEyeFilteredRows();
+  renderOutEyeSummary(rows);
+  renderOutEyeOverviewChart(rows);
+  renderOutEyeBreakdown(rows);
+  OUTEYE_PAGE = 1;
+  renderOutEyeTable(rows);
+}
+
+// إخفاء/تصغير شاشة رفع الملف الكبيرة لما يكون فيه بيانات محمّلة بالفعل، واستبدالها بشريط صغير
+function renderOutEyeUploadCollapse(){
+  const hasData = ALL_OUTEYE_ROWS.length>0;
+  const versions = distinctOutEyeVersions();
+  if(hasData && !outEyeUploadExpanded){
+    $('outEyeUploadZone').classList.add('hidden');
+    $('outEyeUploadCollapsed').classList.remove('hidden');
+    $('outEyeUploadCollapsedInfo').textContent =
+      `تم رفع ${versions.length.toLocaleString('ar-EG')} إصدار (${ALL_OUTEYE_ROWS.length.toLocaleString('ar-EG')} صف). محتاج تضيف إصدار جديد؟`;
+  } else {
+    $('outEyeUploadZone').classList.remove('hidden');
+    $('outEyeUploadCollapsed').classList.add('hidden');
+  }
+}
+
+// ربط الفلاتر
+['outEyeVersionFilter','outEyeRegionFilter','outEyeOfficeFilter','outEyeSupervisorFilter'].forEach(id=>{
+  $(id).addEventListener('change', (e)=>{
+    const key = id.replace('outEye','').replace('Filter','').toLowerCase();
+    OUTEYE_FILTER_STATE[key] = e.target.value;
+    renderOutEyeAll();
+  });
+});
+$('outEyeSearchInput').addEventListener('input', (e)=>{
+  OUTEYE_FILTER_STATE.search = e.target.value.trim();
+  renderOutEyeAll();
+});
+
+$('outEyeTopNSelect').addEventListener('change', (e)=>{
+  const v = e.target.value;
+  OUTEYE_TOPN = (v==='ALL') ? 'ALL' : Number(v);
+  renderOutEyeBreakdown(outEyeFilteredRows());
+});
+
+$('outEyeExpandUploadBtn').addEventListener('click', ()=>{
+  outEyeUploadExpanded = true;
+  renderOutEyeUploadCollapse();
+});
+
+$('outEyeFileInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const versionInput = $('outEyeVersionInput');
+  const version = (versionInput.value||'').trim();
+  if(!version){ alert('لازم تحدد اسم إصدار قبل رفع الملف.'); e.target.value=''; return; }
+  try{
+    const newRows = await parseOutEyeFile(file, version);
+    if(newRows.length===0){ alert('لم يتم العثور على أي صفوف صالحة فى الملف.'); return; }
+    mergeOutEyeRows(newRows);
+    saveOutEyeRows();
+    outEyeUploadExpanded = false;
+    renderOutEyeVersionChips();
+    populateOutEyeFilters();
+    renderOutEyeAll();
+    showToast('تم رفع '+newRows.length.toLocaleString('ar-EG')+' كود بنجاح ✅');
+  }catch(err){
+    alert('خطأ فى قراءة الملف: '+err.message);
+  }finally{
+    e.target.value = '';
+  }
+});
+
+$('outEyeClearBtn').addEventListener('click', ()=>{
+  if(!confirm('مسح كل بيانات تقرير تسليمات داخل/خارج العين (كل الإصدارات)؟ ده إجراء نهائي.')) return;
+  ALL_OUTEYE_ROWS = [];
+  outEyeUploadExpanded = false;
+  saveOutEyeRows();
+  renderOutEyeVersionChips();
+  populateOutEyeFilters();
+  renderOutEyeAll();
+});
+
+$('outEyeExportBtn').addEventListener('click', async ()=>{
+  const rows = outEyeFilteredRows();
+  if(rows.length===0){ alert('لا توجد بيانات للتصدير ضمن النطاق المحدد.'); return; }
+  const wb = new ExcelJS.Workbook();
+  const headerFill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF1F2937'}};
+
+  function buildAggSheet(name, data){
+    const ws = wb.addWorksheet(name, {views:[{rightToLeft:true}]});
+    ws.columns = [
+      {header:name, key:'key', width:24},
+      {header:'عدد الأكواد', key:'codes', width:14},
+      {header:'داخل العين', key:'inside', width:14},
+      {header:'الاقارب', key:'relatives', width:14},
+      {header:'خارج العين', key:'outside', width:14},
+      {header:'الإجمالي', key:'total', width:14},
+      {header:'نسبة خارج العين %', key:'pct', width:18},
+    ];
+    ws.getRow(1).font = {bold:true, color:{argb:'FFFFFFFF'}};
+    ws.getRow(1).fill = headerFill;
+    // data تيجي مرتّبة بالفعل تنازليًا حسب نسبة خارج العين % (أساس الترتيب فى كل التقارير، مش عدد التسليمات)
+    for(const a of data){
+      ws.addRow({key:a.key, codes:a.codes.size, inside:a.inside, relatives:a.relatives, outside:a.outside,
+        total:a.total, pct: a.total? +((a.outside/a.total)*100).toFixed(1) : 0});
+    }
+    ws.autoFilter = {from:'A1', to:'G1'};
+    styleExcelSheet(ws, {pctCol:7, lastCol:7});
+  }
+
+  buildAggSheet('حسب المنطقة', outEyeAggregateBy(rows, r=>outEyeRowHierarchy(r).region));
+  buildAggSheet('حسب المكتب', outEyeAggregateBy(rows, r=>outEyeRowHierarchy(r).office));
+  buildAggSheet('حسب المشرف', outEyeAggregateBy(rows, r=>outEyeRowHierarchy(r).supervisor));
+  buildAggSheet('حسب الموزع', outEyeAggregateBy(rows, r=>r.code));
+
+  const wsRaw = wb.addWorksheet('البيانات الخام (بالموزع)', {views:[{rightToLeft:true}]});
+  wsRaw.columns = [
+    {header:'كود الموزع', key:'code', width:16},
+    {header:'الإصدار', key:'version', width:18},
+    {header:'المنطقة', key:'region', width:16},
+    {header:'المكتب', key:'office', width:16},
+    {header:'المشرف', key:'supervisor', width:18},
+    {header:'داخل العين', key:'inside', width:12},
+    {header:'الاقارب', key:'relatives', width:12},
+    {header:'خارج العين', key:'outside', width:12},
+    {header:'الإجمالي', key:'total', width:12},
+    {header:'نسبة خارج العين %', key:'pct', width:18},
+    {header:'تفصيل الصفات', key:'detail', width:50},
+  ];
+  wsRaw.getRow(1).font = {bold:true, color:{argb:'FFFFFFFF'}};
+  wsRaw.getRow(1).fill = headerFill;
+  // ترتيب الصفوف الخام أيضًا حسب الأعلى نسبة خارج العين % (نفس أساس الترتيب فى كل الشاشات)
+  const rawSorted = [...rows].sort((r1,r2)=>{
+    const p1 = r1.total ? (r1.outsideTotal/r1.total*100) : -1;
+    const p2 = r2.total ? (r2.outsideTotal/r2.total*100) : -1;
+    return p2 - p1;
+  });
+  for(const r of rawSorted){
+    const h = outEyeRowHierarchy(r);
+    wsRaw.addRow({
+      code:r.code, version:r.version, region:h.region, office:h.office, supervisor:h.supervisor,
+      inside:r.insideTotal, relatives:r.relativesTotal, outside:r.outsideTotal, total:r.total,
+      pct: r.total? +((r.outsideTotal/r.total)*100).toFixed(1) : 0,
+      detail: Object.entries(r.reasons).map(([n,v])=>`${n}: ${v}`).join('، ')
+    });
+  }
+  wsRaw.autoFilter = {from:'A1', to:'K1'};
+  styleExcelSheet(wsRaw, {pctCol:10, lastCol:11});
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'تقرير-تسليمات-داخل-خارج-العين-'+new Date().toISOString().slice(0,10)+'.xlsx';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+// مبدّل الشاشتين: مخالفات الاسم والتكرار / تسليمات داخل خارج العين
+$('screenBtnMain').addEventListener('click', ()=>{
+  $('screenBtnMain').classList.add('active');
+  $('screenBtnOutEye').classList.remove('active');
+  $('screenMain').classList.remove('hidden');
+  $('screenOutEye').classList.add('hidden');
+});
+$('screenBtnOutEye').addEventListener('click', ()=>{
+  $('screenBtnOutEye').classList.add('active');
+  $('screenBtnMain').classList.remove('active');
+  $('screenOutEye').classList.remove('hidden');
+  $('screenMain').classList.add('hidden');
+});
+
+// تحميل بيانات هذا التقرير عند فتح الصفحة (مستقل تمامًا عن رفع ملف المخالفات الرئيسي)
+loadOutEyeRows();
+renderOutEyeVersionChips();
+populateOutEyeFilters();
+renderOutEyeAll();
+
+</script>
+</body>
+</html>
